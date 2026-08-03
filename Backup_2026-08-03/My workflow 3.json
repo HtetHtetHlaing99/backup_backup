@@ -1,0 +1,108 @@
+{
+  "updatedAt": "2026-03-05T13:43:44.630Z",
+  "createdAt": "2026-03-05T13:42:45.517Z",
+  "id": "aPSOJNp3MUlV4SYm",
+  "name": "My workflow 3",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9bc9cc3a-8a96-40bb-b6e0-332b95a71ac7",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {
+          "memoryConnection": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "00bb455b-b855-4766-b039-9b29a493876b",
+      "name": "Chat",
+      "webhookId": "89e851f9-43a9-4238-afc4-ae4a33848444"
+    },
+    {
+      "parameters": {
+        "options": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "e94664e3-1e59-4d6a-aa2a-086dac344ede",
+      "name": "Send a message",
+      "webhookId": "6cbc853a-29d0-491a-962a-1d6592a8c23f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AHnor92JnqgLA4fE",
+          "name": "Htet Gmail Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "3fb0ebe7-84d7-484a-ba84-35a67ec21c00",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-05T13:42:45.517Z",
+      "createdAt": "2026-03-05T13:42:45.517Z",
+      "role": "workflow:owner",
+      "workflowId": "aPSOJNp3MUlV4SYm",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
