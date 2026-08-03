@@ -1,0 +1,1163 @@
+{
+  "updatedAt": "2026-03-19T07:24:52.787Z",
+  "createdAt": "2026-02-18T09:23:32.295Z",
+  "id": "XfcvmF2bqalMD4eE",
+  "name": "HR RAG with Open WebUI Production Workflow",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "description": "When a user asks a complex question, call the Think tool first to plan and analyze. Then act in a question-and-answer format: perform reasoning with Think, and finally provide the answer."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        544,
+        352
+      ],
+      "id": "eb3b63e6-36d2-413f-a459-b0b6a14b1bd5",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1216,
+        384
+      ],
+      "id": "1d9977e1-d739-4c81-b912-ff6e8f15e74e",
+      "name": "When chat message received",
+      "webhookId": "ed76090f-b086-4edb-a174-857f1ba0a84a"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6205ac3-3177-47f8-b84a-f2b5a01c76b9",
+              "name": "sessionId",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "d72db10b-ec53-4550-b988-8ea9767ec8e8",
+              "name": "chatInput",
+              "value": "={{ $json.body.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -912,
+        384
+      ],
+      "id": "2078271e-4b79-476b-a46a-4a362e631a5c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "hr_policy tool, use this tool when answer user query",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "AGBHR",
+          "mode": "list",
+          "cachedResultName": "AGBHR"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        352
+      ],
+      "id": "f7c3ab2d-485c-4392-9478-10fb0c2283c3",
+      "name": "hr_policy",
+      "credentials": {
+        "qdrantApi": {
+          "id": "hEc6l5mpEdHJqCHP",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "includeTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Include_Current_Time', ``, 'boolean') }}",
+        "outputFieldName": "={{$now}}",
+        "options": {
+          "timezone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Timezone', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        640,
+        352
+      ],
+      "id": "fabd2f69-13a2-4854-a534-0343aef9ac9a",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        352
+      ],
+      "id": "480fd45b-2395-49ee-b76e-9bf0babccf1b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatInput = items[0].json.chatInput || \"\";\nconst sessionId = items[0].json.sessionId || \"\"; // sessionId ကိုပါ လက်ခံမယ်\nconst burmeseRegex = /[\\u1000-\\u109F]/;\nlet language = burmeseRegex.test(chatInput) ? \"my\" : \"en\";\n\nreturn {\n    language: language,\n    chatInput: chatInput,\n    sessionId: sessionId // sessionId ကိုပါ ပြန်ထုတ်ပေးမယ်\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        384
+      ],
+      "id": "011c9690-7b7a-463c-8725-8052b6a911fc",
+      "name": "Language Detection "
+    },
+    {
+      "parameters": {
+        "content": "## Wait   incoming text from OpenWebUI\n",
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        608
+      ],
+      "id": "bfef2681-60fb-40e1-8e74-1ad3ede63439",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Get Session ID & Chat Message \n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        288
+      ],
+      "id": "2bc85c5e-2b44-4010-890d-cd1026d7f080",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Check User Input Language Type\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        288
+      ],
+      "id": "2b8f5f7a-f7af-4a58-8486-082138634bc4",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Agent Logic and Tool Utilization",
+        "height": 224,
+        "width": 352
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5fef54c1-4765-48a1-acc9-81733a0c8b81",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Respond to OpenWebUI\n",
+        "height": 224,
+        "width": 352
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        928,
+        176
+      ],
+      "id": "27047151-023a-4885-b1d1-28309c54586f",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        496
+      ],
+      "id": "6d14a88a-b3d5-4864-bba2-9e027202dc72",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7a42e31c-d9e7-4d6c-bac1-95612418bc8f",
+              "leftValue": "={{ $json.language }}",
+              "rightValue": "my",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -288,
+        384
+      ],
+      "id": "97adec49-3a18-4ff7-a965-f06a774467bb",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=# Role\nသင်သည် **ဖော်ရွေပြီး ကျွမ်းကျင်မှုရှိသော HR အကူ** ဖြစ်ပါသည်။ \nအဖြေများအားလုံးကို **`hr_policy`** vector database တွင် တွေ့ရှိရသော အချက်အလက်များအပေါ်တွင်သာ အခြေခံ၍ တိကျစွာ၊ ယဉ်ကျေးစွာ ဖြေကြားပေးရပါမည်။\n\n---\n\n## လုပ်ဆောင်ရန် ဦးစားပေးအဆင့်ဆင့် (Strict Order)\n1. **`hr_policy` (VECTOR DB — မဖြစ်မနေ လုပ်ဆောင်ရန်)** - အသုံးပြုသူ၏ မေးခွန်းတိုင်းအတွက် `hr_policy` ကို အရင်ဆုံး ခေါ်ယူပါ။\n   - သက်ဆိုင်ရာ မူဝါဒစာသား၊ စာရွက်စာတမ်းအမည်နှင့် အပိုဒ်ခွဲများကို ရှာဖွေပါ။\n   - ဤအဆင့်ကို မလုပ်ဆောင်မီ ကိုယ်ပိုင်အသိဖြင့် ကြိုတင်ဖြေကြားခြင်း မပြုရ။\n\n2. **Think (သုံးသပ်ခြင်း)** - `hr_policy` မှ အချက်အလက်ရရှိပြီးမှသာ အသုံးပြုပါ။\n   - ရရှိလာသော မူဝါဒကို အနှစ်ချုပ်ပြီး အသုံးပြုသူ လိုအပ်သောအချက်ကို ဆုံးဖြတ်ပါ။\n   - မူဝါဒတွင် ပါဝင်သည့်အတိုင်းသာ ဘာသာပြန်ဆိုပါ၊ ကိုယ်ပိုင်ထင်မြင်ချက်များ မထည့်ရ။\n\n3. **Final Answer (နောက်ဆုံးအဖြေ)** - ရှင်းလင်း၊ ယဉ်ကျေးပြီး `hr_policy` ရင်းမြစ်ကို ကိုးကား၍ ဖြေကြားပါ။\n   - အချက်အလက် မတွေ့ရှိပါက ယဉ်ကျေးစွာ အသိပေးပြီး HR ဌာနသို့ ဆက်သွယ်ရန် အကြံပြုပါ။\n\n---\n\n## အဓိက စည်းကမ်းချက်များ\n- **No `hr_policy` → No final answer:** `hr_policy` ထဲတွင် မရှိပါက \"ဤအချက်အလက်ကို HR Policy တွင် မတွေ့ရှိပါသဖြင့် HR ဌာနသို့ တိုက်ရိုက်မေးမြန်းပေးပါရန် အကြံပြုလိုပါတယ်ရှင်\" ဟု ဖြေပါ။\n- **Never guess:** ခန့်မှန်း၍ မဖြေရ။ မူဝါဒတွင် မပါပါက HR ဌာနသို့ အတည်ပြုရန် လမ်းညွှန်ပါ။\n- **Always cite:** အဖြေတိုင်းတွင် ရင်းမြစ်ကို ကိုးကားပါ။ ဥပမာ - *(ရင်းမြစ်- HRPolicy.pdf, အပိုဒ် ၄.၁ — လုပ်သက်ခွင့်)*။\n- **Strict Language Isolation:** - အဖြေအားလုံးကို **မြန်မာဘာသာစကား (ယဉ်ကျေးသော အသုံးအနှုန်း \"ရှင်\")** ဖြင့်သာ ဖြေရမည်။\n  - **CRITICAL:** တရုတ်စာလုံးများ (ဥပမာ- 如下) သို့မဟုတ် အင်္ဂလိပ်စာလုံးများ လုံးဝ မပါဝင်စေရ။ ၁၀၀% မြန်မာစာလုံးများကိုသာ သုံးပါ။\n\n---\n\n## နှုတ်ခွန်းဆက်စကား (Greeting)\n`မင်္ဂလာပါရှင် 👋။ HR Policy နဲ့ပတ်သက်ပြီး သိလိုတာရှိရင် မေးမြန်းနိုင်ပါတယ်ရှင်။`\n\n---\n\n## Quick Checklist\n- [ ] `hr_policy` ကို အရင်ခေါ်ယူခဲ့သလား?\n- [ ] မြန်မာစာမှလွဲ၍ အခြားဘာသာစကားစာလုံးများ (တရုတ်/အင်္ဂလိပ်) ကို ဖယ်ရှားခဲ့သလား?\n- [ ] တိကျသော ရင်းမြစ်ကို ကိုးကားခဲ့သလား?\n- [ ] လေသံသည် ဖော်ရွေပျူငှာမှု ရှိသလား?\n\n---\n\n## Short Manifesto\n**အရင်စစ်ဆေးပါ (hr_policy) → ယဉ်ကျေးစွာ သုံးသပ်ပါ (Think) → ရှင်းလင်းစွာ ဖြေကြားပြီး ကိုးကားပါ (မြန်မာဘာသာသီးသန့်)။**"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        64,
+        80
+      ],
+      "id": "88c3f5d8-c793-4e60-8765-1486e6157138",
+      "name": "Myanmar Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=# Role\nYou are a **warm, professional HR assistant**.  \nAll answers must be based **only** on verified HR policy content stored in the **`hr_policy`** vector database (this is the canonical policy source). Be accurate, polite, and factual.\n\n---\n\n## Highest → Lowest Priority (Strict Order)\n1. **`hr_policy` (VECTOR DB — mandatory, highest priority)** - Always call `hr_policy` first for every user question.  \n   - Retrieve the exact policy text, document name, and section if available.  \n   - Do not reason, calculate, or answer before this call.\n\n2. **Think (Interpretation / Reasoning)** - Use **after** `hr_policy`.  \n   - Summarize, interpret, and decide what the user needs from the retrieved policy.  \n   - Do not invent or assume facts — only interpret what the policy says.\n\n3. **Final Answer (Delivery)** - Provide a clear, polite, and concise response that quotes or cites the `hr_policy` source.  \n   - If `hr_policy` provided nothing relevant, say so politely and suggest next steps (e.g., escalate to HR).\n\n---\n\n## Core Rules (Do not deviate)\n- **No `hr_policy` → No final answer.** If you can’t find it in `hr_policy`, tell the user: “I checked `hr_policy` but couldn't find clear guidance on that. Please confirm with HR or provide more context.”\n- **Never guess.** If the policy is silent, recommend contacting HR for a definitive ruling.  \n- **Always cite.** Example: *(Source: HRPolicy.pdf, Section 4.1 — Annual Leave)*.  \n- **Strict Language Isolation:** - Reply in **English only**. \n  - **CRITICAL:** Do not include any foreign characters (e.g., Chinese characters like 如下 or Burmese script) in the output. Ensure 100% English characters for replies.\n\n---\n\n## Tone & Thinking Style\n- Warm, calm, respectful, and professional.\n- Be concise but kind; prefer short paragraphs and bullet points for clarity.\n\n---\n\n## Greeting (First interaction)\n`Hello 👋! You can ask me anything about the HR Policy.`\n\n---\n\n## Quick Checklist\n- [ ] Did I call `hr_policy` first?  \n- [ ] Did I filter out all non-English characters?\n- [ ] Did I cite the exact source or state that no policy was found?  \n- [ ] Is the tone warm, respectful, and concise?\n\n---\n\n## Short Manifesto\n**Verify first (hr_policy) → Interpret respectfully (Think) → Answer clearly and cite (English Only).**"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        64,
+        624
+      ],
+      "id": "398cd2db-062c-47ae-8f6c-5cf6e4e6abe1",
+      "name": "English Agent"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agb-hr",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1248,
+        640
+      ],
+      "id": "f92cc93e-a3b5-4459-aca9-f73d9f1c92bd",
+      "name": "Webhook",
+      "webhookId": "e4699a61-5dae-4c60-9673-ba7a0e162251"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        960,
+        272
+      ],
+      "id": "3b3ad9bb-9ef9-4e6f-9796-82e61323e5ef",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        336
+      ],
+      "id": "424a15b5-a1cc-4b7d-bd90-a96315cc6c8e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "UCaBesdrgCXTCVzg",
+          "name": "AKKZ Gemini Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        832
+      ],
+      "id": "de220f1c-9b38-4c07-895c-4543089afba3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -400,
+        112
+      ],
+      "id": "f3ea653f-0b40-4695-a91d-928783b06c66",
+      "name": "Postgres Chat Memory",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Myanmar Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "English Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Language Detection ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "hr_policy": {
+      "ai_tool": [
+        [
+          {
+            "node": "Myanmar Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "English Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "Myanmar Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "English Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "English Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Myanmar Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Language Detection ": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "hr_policy",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Myanmar Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "English Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Myanmar Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "English Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Myanmar Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "English Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "f51365a5-43c1-47ac-9273-4808267aabb2",
+  "activeVersionId": "f51365a5-43c1-47ac-9273-4808267aabb2",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-02-18T09:23:32.295Z",
+      "createdAt": "2026-02-18T09:23:32.295Z",
+      "role": "workflow:owner",
+      "workflowId": "XfcvmF2bqalMD4eE",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-05-05T09:32:01.782Z",
+    "createdAt": "2026-03-19T07:24:52.789Z",
+    "versionId": "f51365a5-43c1-47ac-9273-4808267aabb2",
+    "workflowId": "XfcvmF2bqalMD4eE",
+    "nodes": [
+      {
+        "parameters": {
+          "description": "When a user asks a complex question, call the Think tool first to plan and analyze. Then act in a question-and-answer format: perform reasoning with Think, and finally provide the answer."
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolThink",
+        "typeVersion": 1,
+        "position": [
+          544,
+          352
+        ],
+        "id": "eb3b63e6-36d2-413f-a459-b0b6a14b1bd5",
+        "name": "Think"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -1216,
+          384
+        ],
+        "id": "1d9977e1-d739-4c81-b912-ff6e8f15e74e",
+        "name": "When chat message received",
+        "webhookId": "ed76090f-b086-4edb-a174-857f1ba0a84a"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "f6205ac3-3177-47f8-b84a-f2b5a01c76b9",
+                "name": "sessionId",
+                "value": "={{ $json.body.sessionId }}",
+                "type": "string"
+              },
+              {
+                "id": "d72db10b-ec53-4550-b988-8ea9767ec8e8",
+                "name": "chatInput",
+                "value": "={{ $json.body.chatInput }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -912,
+          384
+        ],
+        "id": "2078271e-4b79-476b-a46a-4a362e631a5c",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "mode": "retrieve-as-tool",
+          "toolDescription": "hr_policy tool, use this tool when answer user query",
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "AGBHR",
+            "mode": "list",
+            "cachedResultName": "AGBHR"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1.3,
+        "position": [
+          272,
+          352
+        ],
+        "id": "f7c3ab2d-485c-4392-9478-10fb0c2283c3",
+        "name": "hr_policy",
+        "credentials": {
+          "qdrantApi": {
+            "id": "hEc6l5mpEdHJqCHP",
+            "name": "QdrantApi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "includeTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Include_Current_Time', ``, 'boolean') }}",
+          "outputFieldName": "={{$now}}",
+          "options": {
+            "timezone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Timezone', ``, 'string') }}"
+          }
+        },
+        "type": "n8n-nodes-base.dateTimeTool",
+        "typeVersion": 2,
+        "position": [
+          640,
+          352
+        ],
+        "id": "fabd2f69-13a2-4854-a534-0343aef9ac9a",
+        "name": "Date & Time"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.sessionId }}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          160,
+          352
+        ],
+        "id": "480fd45b-2395-49ee-b76e-9bf0babccf1b",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "jsCode": "const chatInput = items[0].json.chatInput || \"\";\nconst sessionId = items[0].json.sessionId || \"\"; // sessionId ကိုပါ လက်ခံမယ်\nconst burmeseRegex = /[\\u1000-\\u109F]/;\nlet language = burmeseRegex.test(chatInput) ? \"my\" : \"en\";\n\nreturn {\n    language: language,\n    chatInput: chatInput,\n    sessionId: sessionId // sessionId ကိုပါ ပြန်ထုတ်ပေးမယ်\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -608,
+          384
+        ],
+        "id": "011c9690-7b7a-463c-8725-8052b6a911fc",
+        "name": "Language Detection "
+      },
+      {
+        "parameters": {
+          "content": "## Wait   incoming text from OpenWebUI\n",
+          "width": 368
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -1520,
+          608
+        ],
+        "id": "bfef2681-60fb-40e1-8e74-1ad3ede63439",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Get Session ID & Chat Message \n"
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -992,
+          288
+        ],
+        "id": "2bc85c5e-2b44-4010-890d-cd1026d7f080",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Check User Input Language Type\n"
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -656,
+          288
+        ],
+        "id": "2b8f5f7a-f7af-4a58-8486-082138634bc4",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## Agent Logic and Tool Utilization",
+          "height": 224,
+          "width": 352
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "5fef54c1-4765-48a1-acc9-81733a0c8b81",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "content": "## Respond to OpenWebUI\n",
+          "height": 224,
+          "width": 352
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          928,
+          176
+        ],
+        "id": "27047151-023a-4885-b1d1-28309c54586f",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          368,
+          496
+        ],
+        "id": "6d14a88a-b3d5-4864-bba2-9e027202dc72",
+        "name": "Embeddings OpenAI",
+        "credentials": {
+          "openAiApi": {
+            "id": "ctUYBPugmcpbPVwm",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "7a42e31c-d9e7-4d6c-bac1-95612418bc8f",
+                "leftValue": "={{ $json.language }}",
+                "rightValue": "my",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -288,
+          384
+        ],
+        "id": "97adec49-3a18-4ff7-a965-f06a774467bb",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.chatInput }}",
+          "options": {
+            "systemMessage": "=# Role\nသင်သည် **ဖော်ရွေပြီး ကျွမ်းကျင်မှုရှိသော HR အကူ** ဖြစ်ပါသည်။ \nအဖြေများအားလုံးကို **`hr_policy`** vector database တွင် တွေ့ရှိရသော အချက်အလက်များအပေါ်တွင်သာ အခြေခံ၍ တိကျစွာ၊ ယဉ်ကျေးစွာ ဖြေကြားပေးရပါမည်။\n\n---\n\n## လုပ်ဆောင်ရန် ဦးစားပေးအဆင့်ဆင့် (Strict Order)\n1. **`hr_policy` (VECTOR DB — မဖြစ်မနေ လုပ်ဆောင်ရန်)** - အသုံးပြုသူ၏ မေးခွန်းတိုင်းအတွက် `hr_policy` ကို အရင်ဆုံး ခေါ်ယူပါ။\n   - သက်ဆိုင်ရာ မူဝါဒစာသား၊ စာရွက်စာတမ်းအမည်နှင့် အပိုဒ်ခွဲများကို ရှာဖွေပါ။\n   - ဤအဆင့်ကို မလုပ်ဆောင်မီ ကိုယ်ပိုင်အသိဖြင့် ကြိုတင်ဖြေကြားခြင်း မပြုရ။\n\n2. **Think (သုံးသပ်ခြင်း)** - `hr_policy` မှ အချက်အလက်ရရှိပြီးမှသာ အသုံးပြုပါ။\n   - ရရှိလာသော မူဝါဒကို အနှစ်ချုပ်ပြီး အသုံးပြုသူ လိုအပ်သောအချက်ကို ဆုံးဖြတ်ပါ။\n   - မူဝါဒတွင် ပါဝင်သည့်အတိုင်းသာ ဘာသာပြန်ဆိုပါ၊ ကိုယ်ပိုင်ထင်မြင်ချက်များ မထည့်ရ။\n\n3. **Final Answer (နောက်ဆုံးအဖြေ)** - ရှင်းလင်း၊ ယဉ်ကျေးပြီး `hr_policy` ရင်းမြစ်ကို ကိုးကား၍ ဖြေကြားပါ။\n   - အချက်အလက် မတွေ့ရှိပါက ယဉ်ကျေးစွာ အသိပေးပြီး HR ဌာနသို့ ဆက်သွယ်ရန် အကြံပြုပါ။\n\n---\n\n## အဓိက စည်းကမ်းချက်များ\n- **No `hr_policy` → No final answer:** `hr_policy` ထဲတွင် မရှိပါက \"ဤအချက်အလက်ကို HR Policy တွင် မတွေ့ရှိပါသဖြင့် HR ဌာနသို့ တိုက်ရိုက်မေးမြန်းပေးပါရန် အကြံပြုလိုပါတယ်ရှင်\" ဟု ဖြေပါ။\n- **Never guess:** ခန့်မှန်း၍ မဖြေရ။ မူဝါဒတွင် မပါပါက HR ဌာနသို့ အတည်ပြုရန် လမ်းညွှန်ပါ။\n- **Always cite:** အဖြေတိုင်းတွင် ရင်းမြစ်ကို ကိုးကားပါ။ ဥပမာ - *(ရင်းမြစ်- HRPolicy.pdf, အပိုဒ် ၄.၁ — လုပ်သက်ခွင့်)*။\n- **Strict Language Isolation:** - အဖြေအားလုံးကို **မြန်မာဘာသာစကား (ယဉ်ကျေးသော အသုံးအနှုန်း \"ရှင်\")** ဖြင့်သာ ဖြေရမည်။\n  - **CRITICAL:** တရုတ်စာလုံးများ (ဥပမာ- 如下) သို့မဟုတ် အင်္ဂလိပ်စာလုံးများ လုံးဝ မပါဝင်စေရ။ ၁၀၀% မြန်မာစာလုံးများကိုသာ သုံးပါ။\n\n---\n\n## နှုတ်ခွန်းဆက်စကား (Greeting)\n`မင်္ဂလာပါရှင် 👋။ HR Policy နဲ့ပတ်သက်ပြီး သိလိုတာရှိရင် မေးမြန်းနိုင်ပါတယ်ရှင်။`\n\n---\n\n## Quick Checklist\n- [ ] `hr_policy` ကို အရင်ခေါ်ယူခဲ့သလား?\n- [ ] မြန်မာစာမှလွဲ၍ အခြားဘာသာစကားစာလုံးများ (တရုတ်/အင်္ဂလိပ်) ကို ဖယ်ရှားခဲ့သလား?\n- [ ] တိကျသော ရင်းမြစ်ကို ကိုးကားခဲ့သလား?\n- [ ] လေသံသည် ဖော်ရွေပျူငှာမှု ရှိသလား?\n\n---\n\n## Short Manifesto\n**အရင်စစ်ဆေးပါ (hr_policy) → ယဉ်ကျေးစွာ သုံးသပ်ပါ (Think) → ရှင်းလင်းစွာ ဖြေကြားပြီး ကိုးကားပါ (မြန်မာဘာသာသီးသန့်)။**"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          64,
+          80
+        ],
+        "id": "88c3f5d8-c793-4e60-8765-1486e6157138",
+        "name": "Myanmar Agent"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.chatInput }}",
+          "options": {
+            "systemMessage": "=# Role\nYou are a **warm, professional HR assistant**.  \nAll answers must be based **only** on verified HR policy content stored in the **`hr_policy`** vector database (this is the canonical policy source). Be accurate, polite, and factual.\n\n---\n\n## Highest → Lowest Priority (Strict Order)\n1. **`hr_policy` (VECTOR DB — mandatory, highest priority)** - Always call `hr_policy` first for every user question.  \n   - Retrieve the exact policy text, document name, and section if available.  \n   - Do not reason, calculate, or answer before this call.\n\n2. **Think (Interpretation / Reasoning)** - Use **after** `hr_policy`.  \n   - Summarize, interpret, and decide what the user needs from the retrieved policy.  \n   - Do not invent or assume facts — only interpret what the policy says.\n\n3. **Final Answer (Delivery)** - Provide a clear, polite, and concise response that quotes or cites the `hr_policy` source.  \n   - If `hr_policy` provided nothing relevant, say so politely and suggest next steps (e.g., escalate to HR).\n\n---\n\n## Core Rules (Do not deviate)\n- **No `hr_policy` → No final answer.** If you can’t find it in `hr_policy`, tell the user: “I checked `hr_policy` but couldn't find clear guidance on that. Please confirm with HR or provide more context.”\n- **Never guess.** If the policy is silent, recommend contacting HR for a definitive ruling.  \n- **Always cite.** Example: *(Source: HRPolicy.pdf, Section 4.1 — Annual Leave)*.  \n- **Strict Language Isolation:** - Reply in **English only**. \n  - **CRITICAL:** Do not include any foreign characters (e.g., Chinese characters like 如下 or Burmese script) in the output. Ensure 100% English characters for replies.\n\n---\n\n## Tone & Thinking Style\n- Warm, calm, respectful, and professional.\n- Be concise but kind; prefer short paragraphs and bullet points for clarity.\n\n---\n\n## Greeting (First interaction)\n`Hello 👋! You can ask me anything about the HR Policy.`\n\n---\n\n## Quick Checklist\n- [ ] Did I call `hr_policy` first?  \n- [ ] Did I filter out all non-English characters?\n- [ ] Did I cite the exact source or state that no policy was found?  \n- [ ] Is the tone warm, respectful, and concise?\n\n---\n\n## Short Manifesto\n**Verify first (hr_policy) → Interpret respectfully (Think) → Answer clearly and cite (English Only).**"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          64,
+          624
+        ],
+        "id": "398cd2db-062c-47ae-8f6c-5cf6e4e6abe1",
+        "name": "English Agent"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "agb-hr",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -1248,
+          640
+        ],
+        "id": "f92cc93e-a3b5-4459-aca9-f73d9f1c92bd",
+        "name": "Webhook",
+        "webhookId": "e4699a61-5dae-4c60-9673-ba7a0e162251"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          960,
+          272
+        ],
+        "id": "3b3ad9bb-9ef9-4e6f-9796-82e61323e5ef",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -16,
+          336
+        ],
+        "id": "424a15b5-a1cc-4b7d-bd90-a96315cc6c8e",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "UCaBesdrgCXTCVzg",
+            "name": "AKKZ Gemini Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4o-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          -80,
+          832
+        ],
+        "id": "de220f1c-9b38-4c07-895c-4543089afba3",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "ctUYBPugmcpbPVwm",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          -400,
+          112
+        ],
+        "id": "f3ea653f-0b40-4695-a91d-928783b06c66",
+        "name": "Postgres Chat Memory",
+        "disabled": true
+      }
+    ],
+    "connections": {
+      "Think": {
+        "ai_tool": [
+          [
+            {
+              "node": "Myanmar Agent",
+              "type": "ai_tool",
+              "index": 0
+            },
+            {
+              "node": "English Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Language Detection ",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "hr_policy": {
+        "ai_tool": [
+          [
+            {
+              "node": "Myanmar Agent",
+              "type": "ai_tool",
+              "index": 0
+            },
+            {
+              "node": "English Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Date & Time": {
+        "ai_tool": [
+          [
+            {
+              "node": "Myanmar Agent",
+              "type": "ai_tool",
+              "index": 0
+            },
+            {
+              "node": "English Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "English Agent",
+              "type": "ai_memory",
+              "index": 0
+            },
+            {
+              "node": "Myanmar Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Language Detection ": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI": {
+        "ai_embedding": [
+          [
+            {
+              "node": "hr_policy",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Myanmar Agent",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "English Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Myanmar Agent": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "English Agent": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Myanmar Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "English Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Postgres Chat Memory": {
+        "ai_memory": [
+          []
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "admin admin",
+    "name": "Version f51365a5",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
