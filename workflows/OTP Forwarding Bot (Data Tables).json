@@ -1,0 +1,764 @@
+{
+  "updatedAt": "2026-06-03T03:53:46.140Z",
+  "createdAt": "2026-06-02T08:14:55.359Z",
+  "id": "6rXR6vUItGDegXN1",
+  "name": "OTP Forwarding Bot (Data Tables)",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SETUP — DO THIS BEFORE ACTIVATING\n\n**1. Enable Data Tables** (self-hosted only)\nSet env var `N8N_ENABLED_MODULES=data-table` and restart n8n. Requires version 1.113+.\nOn n8n Cloud: should be available if your plan supports it.\n\n**2. Create the whitelist table in the UI**\nGo to **Data tables** (left sidebar) → **Create Data table** → name it `whitelist` with one column:\n- `domain` (string)\n\n**3. Wire up the Data Table nodes**\nOpen each of the 4 yellow Data Table nodes in this workflow and select the `whitelist` table from the dropdown. (Table IDs aren't portable across n8n instances — same as Google Sheets.)\n\n**4. Configure admin authorization**\nOpen the **Authorize Command** node and set `ADMIN_CHAT_IDS` to your admin Telegram chat ID. Currently pre-filled with `-5214879667`.\n\n**5. Seed the whitelist**\nAfter activating, send `/add @yourdomain.com` from the admin chat. List with `/list`.",
+        "height": 560,
+        "width": 420
+      },
+      "id": "5cf35a4d-0ee4-46af-8f87-da666973bfcb",
+      "name": "📋 Setup Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        768,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "id": "b22ba231-47f9-40c1-9106-2d3a8db1f374",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        976
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UbnTjvPaPY2xmQWj",
+          "name": "Thone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const json = $input.first().json;\n\n// Handle both string and object formats\nlet raw = json.from || json.From || '';\nif (typeof raw === 'object') {\n  raw = raw.text || raw.value || raw.address || '';\n}\nraw = String(raw);\n\nconst match = raw.match(/@([\\w.-]+)/);\nconst senderDomain = match ? '@' + match[1].toLowerCase() : null;\nreturn [{ json: { ...json, senderDomain } }];"
+      },
+      "id": "9c825b33-0ae9-460c-b599-06f322428e7f",
+      "name": "Extract Sender Domain",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        976
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "zosF4vb0QAMoshqT",
+          "mode": "list",
+          "cachedResultName": "whitelist",
+          "cachedResultUrl": "/projects/7FT1qXwUrXGP3Bsc/datatables/zosF4vb0QAMoshqT"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "domain",
+              "keyValue": "={{ $json.senderDomain }}"
+            }
+          ]
+        }
+      },
+      "id": "94179d26-364b-4d1d-9636-37fd5708f802",
+      "name": "Whitelist Lookup (Data Table)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        976
+      ],
+      "notes": "Select the 'whitelist' table from the dropdown after import.\nTwo outputs: row exists (continue) / row does not exist (stop)."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the Telegram message.\n// Priority: extracted sign-in link > extracted OTP > whole email (default per spec).\n\nconst email = $input.first().json;\nconst plainText = email.text || email.snippet || '';\nconst htmlBody  = email.html || '';\nconst subject   = email.subject || '(no subject)';\n\n// Robust Extract: Handles flat text layouts or nested address blocks safely\nconst from = email.from.text || (email.from.value && email.from.value[0] && email.from.value[0].address) || 'unknown';\n\nconst esc = (s) => String(s)\n  .replace(/&/g, '&amp;')\n  .replace(/</g, '&lt;')\n  .replace(/>/g, '&gt;');\n\nconst loginKw = /(sign[\\s\\-_]?in|log[\\s\\-_]?in|verify|confirm|magic|auth|token|otp|secure[\\s\\-_]?link)/i;\n\n// --- Try to extract a sign-in link ---\nlet extractedLink = null;\nif (htmlBody) {\n  const anchorRe = /<a[^>]+href=[\"']([^\"']+)[\"'][^>]*>([\\s\\S]*?)<\\/a>/gi;\n  let m;\n  while ((m = anchorRe.exec(htmlBody)) !== null) {\n    const url = m[1];\n    const text = m[2].replace(/<[^>]+>/g, '').trim();\n    if (!url.startsWith('http')) continue;\n    if (loginKw.test(url) || loginKw.test(text)) {\n      extractedLink = url;\n      break;\n    }\n  }\n}\nif (!extractedLink) {\n  const urlRe = /https?:\\/\\/[^\\s\"'<>)\\]]+/gi;\n  const all = (plainText + ' ' + htmlBody).match(urlRe) || [];\n  extractedLink = all.find(u => loginKw.test(u)) || null;\n}\n\n// --- Try to extract an OTP (context-aware) ---\nlet extractedOtp = null;\nconst htmlAsText = htmlBody.replace(/<[^>]+>/g, ' ');\nconst searchText = plainText + '\\n' + htmlAsText;\nconst ctxRe = /(?:code|otp|pin|verification|verify|passcode|one[\\s\\-]?time)[^\\d]{0,30}([0-9][0-9\\s\\-]{3,9}[0-9])/i;\nconst ctxMatch = searchText.match(ctxRe);\nif (ctxMatch) {\n  extractedOtp = ctxMatch[1].replace(/\\s/g, '');\n}\nif (!extractedOtp) {\n  const standaloneRe = /(?:^|\\n)\\s*([0-9]{4,8})\\s*(?:$|\\n)/m;\n  const sMatch = searchText.match(standaloneRe);\n  if (sMatch) extractedOtp = sMatch[1];\n}\n\n// --- Build message ---\nlet message;\nif (extractedLink) {\n  message = `🔗 <b>Sign-in Link</b>\\nFrom: ${esc(from)}\\nSubject: ${esc(subject)}\\n\\n${esc(extractedLink)}`;\n} else if (extractedOtp) {\n  message = `🔑 <b>OTP Code</b>\\nFrom: ${esc(from)}\\nSubject: ${esc(subject)}\\n\\n<code>${esc(extractedOtp)}</code>`;\n} else {\n  // Default path: Fallback to the whole email if no link or OTP is found (Per Spec)\n  const body = (plainText && plainText.trim()) || htmlAsText.replace(/\\s+/g, ' ').trim() || '(no body)';\n  const header = `📧 <b>Email Forwarded</b>\\nFrom: ${esc(from)}\\nSubject: ${esc(subject)}\\n\\n`;\n  const TELEGRAM_LIMIT = 4096;\n  const room = TELEGRAM_LIMIT - header.length - 20;\n  const escBody = esc(body);\n  message = escBody.length > room\n    ? header + escBody.substring(0, room) + '\\n[truncated]'\n    : header + escBody;\n}\n\nreturn [{ json: { message } }];"
+      },
+      "id": "1b1e1955-afed-4d2e-ad32-ff4a3cdfe8b4",
+      "name": "Build Telegram Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        896
+      ]
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "62dc4a2d-5396-47b2-8c93-d9bd7e6cf08d",
+      "name": "Telegram Command Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        1696
+      ],
+      "webhookId": "b67450d0-7757-452f-8df7-c4530e455091",
+      "credentials": {
+        "telegramApi": {
+          "id": "ZZqR6OPNemDukRAE",
+          "name": "Thone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $input.first().json.message || {};\nconst rawText = (message.text || '').trim();\nconst chatId  = message.chat && message.chat.id;\nconst userId  = message.from && message.from.id;\nconst parts   = rawText.split(/\\s+/);\nconst command = parts[0].toLowerCase().replace(/^\\//, '');\nlet arg = parts[1] ? parts[1].toLowerCase() : null;\nif (arg && arg.charAt(0) !== '@') arg = '@' + arg;\nreturn [{ json: { command, arg, chatId, userId, rawText } }];"
+      },
+      "id": "c9f121c3-f0b4-475c-954d-6461794f9e75",
+      "name": "Parse Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// === ADMIN AUTHORIZATION ===\nconst ADMIN_CHAT_IDS = [-5086861113];\nconst ADMIN_USER_IDS = [];\n\nconst json = $input.first().json;\nconst chatId = Number(json.chatId);\nconst userId = Number(json.userId);\n\nconst chatOk = ADMIN_CHAT_IDS.includes(chatId);\nconst userOk = ADMIN_USER_IDS.length > 0 && ADMIN_USER_IDS.includes(userId);\n\nif (!chatOk && !userOk) return [];\nreturn [{ json }];"
+      },
+      "id": "95042517-f99f-47d8-a133-7f88ded47b56",
+      "name": "Authorize Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "help"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "list",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "list"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "add",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "add"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "remove",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "remove"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "00a0d184-ecce-418c-a39d-0b44980329fb",
+      "name": "Route Command",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1728,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "help            - Show available commands\nlist            - Show whitelisted domains\nadd <@domain>   - Add domain to whitelist\nremove <@domain> - Remove domain from whitelist",
+        "additionalFields": {}
+      },
+      "id": "35837bcf-c2b5-42a1-9952-b67a0b7024aa",
+      "name": "Reply: help",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2048,
+        1296
+      ],
+      "webhookId": "6f136038-6d87-4926-b2cf-815ea14f23bd",
+      "credentials": {
+        "telegramApi": {
+          "id": "ZZqR6OPNemDukRAE",
+          "name": "Thone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "zosF4vb0QAMoshqT",
+          "mode": "list",
+          "cachedResultName": "whitelist",
+          "cachedResultUrl": "/projects/7FT1qXwUrXGP3Bsc/datatables/zosF4vb0QAMoshqT"
+        },
+        "returnAll": true
+      },
+      "id": "4255b219-49a3-4eef-97c1-e371cdc3d1d3",
+      "name": "List Domains (Data Table)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2048,
+        1488
+      ],
+      "notes": "Select the 'whitelist' table from the dropdown after import."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate all rows into one reply\nconst items = $input.all();\nconst domains = items.map(i => i.json.domain).filter(Boolean);\nconst chatId = $('Parse Command').first().json.chatId;\nconst text = domains.length > 0 ? domains.join('\\n') : '(no domains whitelisted)';\nreturn [{ json: { chatId, text } }];"
+      },
+      "id": "4ed4eb7d-576b-477c-954f-8efb9dd9cd46",
+      "name": "Format List Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "ed15987f-c074-49ca-b4d6-6286d97b91bf",
+      "name": "Reply: list",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2528,
+        1488
+      ],
+      "webhookId": "6fe07a04-04a2-4305-843f-fc721b6fb7cf",
+      "credentials": {
+        "telegramApi": {
+          "id": "ZZqR6OPNemDukRAE",
+          "name": "Thone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = $input.first().json.chatId;\nconst arg = $input.first().json.arg;\nif (!arg) {\n  return [{ json: { chatId, error: 'Usage: add <@domain>', skip: true } }];\n}\nif (!/^@[a-z0-9.-]+\\.[a-z]{2,}$/i.test(arg)) {\n  return [{ json: { chatId, error: 'Invalid domain format. Example: add @mail.anthropic.com', skip: true } }];\n}\nreturn [{ json: { chatId, domain: arg } }];"
+      },
+      "id": "8b03b90b-d619-4e9d-b9ec-3ba73e2befe0",
+      "name": "Validate Add",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "zosF4vb0QAMoshqT",
+          "mode": "list",
+          "cachedResultName": "whitelist",
+          "cachedResultUrl": "/projects/7FT1qXwUrXGP3Bsc/datatables/zosF4vb0QAMoshqT"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "domain": "={{ $json.domain }}"
+          },
+          "matchingColumns": [
+            "domain"
+          ],
+          "schema": [
+            {
+              "id": "domain",
+              "displayName": "domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "5bdcd862-6a56-4cc1-bae4-ba45d884f950",
+      "name": "Upsert Domain (Data Table)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2288,
+        1664
+      ],
+      "notes": "Select the 'whitelist' table from the dropdown after import."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Validate Add').first().json.chatId }}",
+        "text": "={{ $('Validate Add').first().json.error || ('Added ' + $('Validate Add').first().json.domain + ' to the whitelist') }}",
+        "additionalFields": {}
+      },
+      "id": "943068cc-2b83-4159-b133-1c757e746903",
+      "name": "Reply: add",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2528,
+        1664
+      ],
+      "webhookId": "7509c82a-e9e6-4518-95aa-4e5b8c90439b",
+      "credentials": {
+        "telegramApi": {
+          "id": "ZZqR6OPNemDukRAE",
+          "name": "Thone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = $input.first().json.chatId;\nconst arg = $input.first().json.arg;\nif (!arg) {\n  return [{ json: { chatId, error: 'Usage: remove <@domain>', skip: true } }];\n}\nreturn [{ json: { chatId, domain: arg } }];"
+      },
+      "id": "c460a433-64a9-447f-8a59-35fd609bcf06",
+      "name": "Validate Remove",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        1840
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "zosF4vb0QAMoshqT",
+          "mode": "list",
+          "cachedResultName": "whitelist",
+          "cachedResultUrl": "/projects/7FT1qXwUrXGP3Bsc/datatables/zosF4vb0QAMoshqT"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "domain",
+              "keyValue": "={{ $json.domain }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0235d600-d3f6-494b-b5a3-930be6b8471a",
+      "name": "Delete Domain (Data Table)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2288,
+        1840
+      ],
+      "notes": "Select the 'whitelist' table from the dropdown after import."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Validate Remove').first().json.chatId }}",
+        "text": "={{ $('Validate Remove').first().json.error || ('Removed ' + $('Validate Remove').first().json.domain + ' from the whitelist (if it was present)') }}",
+        "additionalFields": {}
+      },
+      "id": "1835879e-8b71-42a9-8572-14fb5b917e56",
+      "name": "Reply: remove",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2528,
+        1840
+      ],
+      "webhookId": "815aaa24-a5a4-44ea-afb7-885d650c7625",
+      "credentials": {
+        "telegramApi": {
+          "id": "ZZqR6OPNemDukRAE",
+          "name": "Thone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=Unknown command: {{ $json.rawText }}\n\nTry: help, list, add <@domain>, remove <@domain>",
+        "additionalFields": {}
+      },
+      "id": "bb1c5d94-30de-45d7-b3c6-4eb42dfc7c69",
+      "name": "Reply: unknown",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2048,
+        2016
+      ],
+      "webhookId": "fc9a79dd-54fd-40e9-ad31-53365225f20b",
+      "credentials": {
+        "telegramApi": {
+          "id": "ZZqR6OPNemDukRAE",
+          "name": "Thone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "=-5151409539",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "18a08e16-d29e-47c3-a9da-b760632e640f",
+      "name": "Send to Telegram Group",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2208,
+        896
+      ],
+      "webhookId": "3a6f501d-f559-4282-b7d3-63e625bea066",
+      "credentials": {
+        "telegramApi": {
+          "id": "ZZqR6OPNemDukRAE",
+          "name": "Thone"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Sender Domain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Sender Domain": {
+      "main": [
+        [
+          {
+            "node": "Whitelist Lookup (Data Table)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Whitelist Lookup (Data Table)": {
+      "main": [
+        [
+          {
+            "node": "Build Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Send to Telegram Group",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Command Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Command": {
+      "main": [
+        [
+          {
+            "node": "Authorize Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize Command": {
+      "main": [
+        [
+          {
+            "node": "Route Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Command": {
+      "main": [
+        [
+          {
+            "node": "Reply: help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List Domains (Data Table)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate Add",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate Remove",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply: unknown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Domains (Data Table)": {
+      "main": [
+        [
+          {
+            "node": "Format List Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format List Reply": {
+      "main": [
+        [
+          {
+            "node": "Reply: list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Add": {
+      "main": [
+        [
+          {
+            "node": "Upsert Domain (Data Table)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Domain (Data Table)": {
+      "main": [
+        [
+          {
+            "node": "Reply: add",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Remove": {
+      "main": [
+        [
+          {
+            "node": "Delete Domain (Data Table)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Domain (Data Table)": {
+      "main": [
+        [
+          {
+            "node": "Reply: remove",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Gmail Trigger": {
+      "lastTimeChecked": 1780716153,
+      "possibleDuplicates": [
+        "19e9af42f8d10033",
+        "19e96e769f231a59"
+      ]
+    },
+    "global": {
+      "whitelist": [
+        "@mail.anthropic.com",
+        "@openai.com",
+        "@manus.im",
+        "@serpapi.com",
+        "@mail.kodekloud.com",
+        "@britishcouncil.org"
+      ]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "6807c0a1-7677-43af-bac0-3c3ce885fc57",
+  "activeVersionId": null,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-06-02T08:14:55.359Z",
+      "createdAt": "2026-06-02T08:14:55.359Z",
+      "role": "workflow:owner",
+      "workflowId": "6rXR6vUItGDegXN1",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
