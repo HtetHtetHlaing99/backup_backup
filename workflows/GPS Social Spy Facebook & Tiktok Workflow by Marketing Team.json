@@ -1,0 +1,698 @@
+{
+  "updatedAt": "2026-07-06T04:25:21.467Z",
+  "createdAt": "2026-06-04T04:15:32.070Z",
+  "id": "YECpoGsGhv1lQ03f",
+  "name": "GPS Social Spy Facebook & Tiktok Workflow by Marketing Team",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# GPS Brands Facbook Social Spy",
+        "height": 544,
+        "width": 992,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1584,
+        272
+      ],
+      "typeVersion": 1,
+      "id": "861a797e-df4c-4e5d-ba59-6c827185397e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# GPS Brand Tiktok Social Spy\n",
+        "height": 544,
+        "width": 896,
+        "color": "#88E292"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1600,
+        1520
+      ],
+      "typeVersion": 1,
+      "id": "d06c30f5-00d4-4b7d-a87e-5b0ad219d298",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Facebook \nATDK Account\n\n## Tiktok \nMyat \n",
+        "height": 144,
+        "width": 944,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -864,
+        2224
+      ],
+      "typeVersion": 1,
+      "id": "53909032-562b-4c9a-b4ab-41bf271b12aa",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Mail to \nmarketing@agbcommunication.com,\nsithuaung@agbcommunication.com,\nkokozin@agbcommunication.com,\nayethandarkyaw@agbcommunication.com,\nhtethtethlaing9927@gmail.com,\nnanshweyin@agbcommunication.com,\nchawthaengone@agbcommunication.com,\nsithuhtet@agbcommunication.com,\nsunlwinhtun@agbcommunication.com,\nhsumyatoo@agbcommunication.com,\nkhinsumyatkyaw@agbcommunication.com,\nthirizhon@agbcommunication.com,\nzanyelin@agbcommunication.com, \nhazel.sumyat@agbcommunication.com,\nyehtetaung2@agbcommunication.com,\nhtutaungkyaw@agbcommunication.com,\nsumyatthwe@agbcommunication.com,\nkhinchawsuwin@agbcommunication.com,\nkyiphyuhan@agbcommunication.com,\nzaylatt@agbcommunication.com\n",
+        "height": 480,
+        "width": 944
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -864,
+        2384
+      ],
+      "typeVersion": 1,
+      "id": "20187ef1-81cb-4862-82af-ebc4209806c9",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// GPS SOCIAL SPY — NORMALIZE & TRUST LAYER v9\n// Corrected production version: Reels + Videos + Images + Albums + Text\n// Key fix: Reels are matched by facebookUrl/inputUrl/pageName/user.name,\n// not only by reel URL. No real scraped post is silently dropped.\n// ====================================================================\n\nconst BRAND_MAP = [\n  { brand: 'Amazing Track Company Limited', url: 'facebook.com/amazingtrack', aliases: ['amazingtrack', 'Amazing Track Company Limited'] },\n  { brand: 'Gonlolo GPS Myanmar-GPS ပညာရှင်', url: 'facebook.com/GonloloGPS', aliases: ['GonloloGPS', 'Gonlolo GPS Myanmar', 'Gonlolo GPS Myanmar-GPS ပညာရှင်'] },\n  { brand: 'GPS tracker', url: 'facebook.com/gpstracker.mm', aliases: ['gpstracker.mm', 'GPS tracker'] },\n  { brand: 'Gps Burma', url: 'facebook.com/gpsburma25', aliases: ['gpsburma25', 'Gps Burma', 'GPS Burma'] },\n  { brand: 'GoSafe GPS ခြေရာခံစနစ်', url: 'facebook.com/gosafegpstracker', aliases: ['gosafegpstracker', 'GoSafe GPS'] },\n  { brand: 'Idea Shop', url: 'facebook.com/myomakhin2019', aliases: ['myomakhin2019', 'Idea Shop'] },\n  { brand: 'Tracker Star GPS System', url: 'facebook.com/TrackerStarGPS', aliases: ['TrackerStarGPS', 'Tracker Star GPS System'] },\n  { brand: 'Gps Service Myanmar', url: 'facebook.com/GpsServiceMyanmar', aliases: ['GpsServiceMyanmar', 'Gps Service Myanmar', 'GPS Service Myanmar'] },\n  { brand: 'Track Man Myanmar', url: 'facebook.com/gpstrackmanmyanmar', aliases: ['gpstrackmanmyanmar', 'Track Man Myanmar'] },\n  { brand: 'Sinotrack GPS Tracker Myanmar', url: 'facebook.com/sinotrackgpsmyanmar', aliases: ['sinotrackgpsmyanmar', 'Sinotrack GPS Tracker Myanmar'] },\n  { brand: 'Happy GPS Myanmar', url: 'facebook.com/HappyGPSMM', aliases: ['HappyGPSMM', 'Happy GPS Myanmar', 'happygpsmyanmar'] },\n  { brand: 'Doe Soh GPS Tracker', url: 'facebook.com/Doesohgpstracker', aliases: ['Doesohgpstracker', 'Doe Soh GPS Tracker'] },\n  { brand: 'AGB Smart Track', url: 'facebook.com/agbsmarttrack', aliases: ['agbsmarttrack', 'AGB Smart Track', 'AGBSmartTrack'] },\n  { brand: 'Myanmar GPS Solution', url: 'facebook.com/gpsblackboxmyanmar', aliases: ['gpsblackboxmyanmar', 'Myanmar GPS Solution'] },\n  { brand: 'FAST GPS & Electronic', url: 'facebook.com/profile.php?id=61551864023705', aliases: ['61551864023705', 'FAST GPS', 'FAST GPS & Electronic'] }\n];\n\nconst CUSTOMER_KEYWORDS = [\n  { name: 'Dong Peng Plastic Mould Mechine & Trading Co.,Ltd', tokens: ['dong peng', 'plastic mould', 'dongpeng'] },\n  { name: 'Octelle Co.,Ltd', tokens: ['octelle'] },\n  { name: 'Iceland', tokens: ['iceland'] },\n  { name: 'Suzuki Ciaz', tokens: ['suzuki ciaz', 'ciaz'] }\n];\n\nfunction safeText(v) { return String(v ?? ''); }\nfunction safeLower(v) { return safeText(v).toLowerCase(); }\n\nfunction toNumber(v) {\n  if (v === null || v === undefined || v === '' || v === '–') return 0;\n  if (typeof v === 'number') return Number.isFinite(v) ? v : 0;\n  const s = String(v).replace(/,/g, '').trim();\n  const n = Number(s);\n  return Number.isFinite(n) ? n : 0;\n}\n\nfunction firstValue(...values) {\n  for (const v of values) {\n    if (v !== null && v !== undefined && v !== '') return v;\n  }\n  return null;\n}\n\nfunction normalizeUrlText(v) {\n  return safeLower(v).replace(/^https?:\\/\\//, '').replace(/^www\\./, '').replace(/\\/$/, '');\n}\n\nfunction getPostUrl(post) {\n  return firstValue(post.url, post.postUrl, post.facebookUrl, post.topLevelUrl, post.permalinkUrl, post.link, post.inputUrl);\n}\n\nfunction getText(post) {\n  return firstValue(post.text, post.caption, post.message, post.description, post.title, post.captionText) || '-';\n}\n\nfunction getViews(post) {\n  return toNumber(firstValue(\n    post.viewsCount,\n    post.videoViewCount,\n    post.videoPostViewCount,\n    post.viewCount,\n    post.views,\n    post.playCount,\n    post.plays,\n    post.videoPlayCount,\n    post.reelPlayCount,\n    post.watchCount\n  ));\n}\n\nfunction collectDeepStrings(value, limit = 250) {\n  const out = [];\n  const seen = new Set();\n  function walk(v) {\n    if (out.length >= limit) return;\n    if (v === null || v === undefined) return;\n    if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {\n      const s = String(v);\n      if (s && s.length <= 500 && !seen.has(s)) {\n        seen.add(s);\n        out.push(s);\n      }\n      return;\n    }\n    if (Array.isArray(v)) {\n      for (const x of v) walk(x);\n      return;\n    }\n    if (typeof v === 'object') {\n      for (const k of Object.keys(v)) {\n        if (['profilePic', 'thumbnail', 'uri', 'image'].includes(k) && out.length > limit / 2) continue;\n        walk(v[k]);\n      }\n    }\n  }\n  walk(value);\n  return out.join(' ');\n}\n\nfunction resolveBrandName(post) {\n  const targetUrl = getPostUrl(post);\n  const haystack = normalizeUrlText([\n    targetUrl,\n    post.inputUrl,\n    post.facebookUrl,\n    post.topLevelUrl,\n    post.pageName,\n    post.facebookId,\n    post.user?.id,\n    post.user?.name,\n    post.user?.profileUrl,\n    post.owner?.id,\n    collectDeepStrings(post.textReferences || [])\n  ].filter(Boolean).join(' '));\n\n  for (const b of BRAND_MAP) {\n    const url = normalizeUrlText(b.url);\n    const slug = url.replace('facebook.com/', '');\n    const aliases = [b.brand, b.url, slug, ...(b.aliases || [])].map(normalizeUrlText).filter(Boolean);\n    if (aliases.some(a => a && haystack.includes(a))) return b.brand;\n  }\n  return null;\n}\n\nfunction countNestedMedia(post) {\n  const ids = new Set();\n  let count = 0;\n  function noteMedia(m) {\n    if (!m || typeof m !== 'object') return;\n    const typename = safeLower(m.__typename || m.__isMedia || m.__isNode || m.type);\n    const hasMedia = typename.includes('photo') || typename.includes('video') || typename.includes('image') || m.image || m.thumbnail || m.url || m.playable_url;\n    if (!hasMedia) return;\n    const id = m.id || m.url || m.thumbnail || JSON.stringify(m).slice(0, 80);\n    if (!ids.has(id)) {\n      ids.add(id);\n      count++;\n    }\n  }\n  function walk(v) {\n    if (!v || typeof v !== 'object') return;\n    if (Array.isArray(v)) { v.forEach(walk); return; }\n    noteMedia(v.media || v);\n    for (const k of Object.keys(v)) {\n      if (['owner', 'user', 'profilePic'].includes(k)) continue;\n      walk(v[k]);\n    }\n  }\n  walk(post.media);\n  walk(post.images);\n  walk(post.photos);\n  walk(post.attachments);\n  return count;\n}\n\nfunction getMediaCount(post) {\n  const directCounts = [post.media, post.images, post.photos, post.attachments]\n    .filter(Array.isArray)\n    .map(a => a.length);\n  return Math.max(0, ...directCounts, countNestedMedia(post));\n}\n\nfunction detectPostType(post) {\n  const targetUrl = getPostUrl(post);\n  const url = safeLower(targetUrl);\n  const deep = safeLower(collectDeepStrings(post, 400));\n  const rawType = safeLower(firstValue(post.type, post.mediaType, post.__typename, post.postType));\n  const mediaCount = getMediaCount(post);\n  const views = getViews(post);\n\n  if (url.includes('/reel/') || url.includes('/reels/') || rawType.includes('reel') || deep.includes('reel')) return 'Reel';\n\n  const hasVideoSignal =\n    post.isVideo === true ||\n    url.includes('/videos/') ||\n    url.includes('/watch/') ||\n    rawType.includes('video') ||\n    deep.includes('__typename video') ||\n    deep.includes('is_playable true') ||\n    !!post.video || !!post.videoUrl || !!post.video_url || !!post.videoThumbnail ||\n    views > 0;\n  if (hasVideoSignal) return 'Video';\n\n  const hasSharedSignal = !!post.sharedPost || !!post.sharedUrl || !!post.sharedFrom || rawType.includes('share') || url.includes('/share/');\n  if (hasSharedSignal) return 'Shared Post';\n\n  if (mediaCount > 1) return 'Multi Image / Album';\n\n  const hasImageSignal =\n    mediaCount === 1 || !!post.image || !!post.imageUrl || !!post.thumbnail || !!post.photoUrl ||\n    rawType.includes('photo') || rawType.includes('image') || url.includes('/photos/') || url.includes('/photo/');\n  if (hasImageSignal) return 'Image';\n\n  return 'Text';\n}\n\nfunction formatMyanmarDate(d) {\n  const date = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Yangon', day: '2-digit', month: 'short', year: 'numeric' }).format(d);\n  const time = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Yangon', hour: '2-digit', minute: '2-digit', hour12: true }).format(d);\n  return `${date}, ${time}`;\n}\n\nfunction timeBucket(hour) {\n  if (hour >= 6 && hour < 10) return 'Morning (6-10 AM)';\n  if (hour >= 10 && hour < 14) return 'Midday (10 AM-2 PM)';\n  if (hour >= 14 && hour < 18) return 'Afternoon (2-6 PM)';\n  if (hour >= 18 && hour < 22) return 'Evening (6-10 PM)';\n  return 'Late Night (10 PM-6 AM)';\n}\n\nfunction getYangonDayType(d) {\n  const dayStr = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Yangon', weekday: 'short' }).format(d);\n  return (dayStr === 'Sat' || dayStr === 'Sun') ? 'Weekend' : 'Weekday';\n}\n\nfunction extractCustomerSegment(content) {\n  const lower = safeLower(content);\n  if (lower.includes('လုပ်ငန်းသုံး') || lower.includes('ကုမ္ပဏီ') || lower.includes('ယာဉ်အုပ်စု') || lower.includes('ကုမ္ပဏီသုံး') || lower.includes('fleet') || lower.includes('business') || lower.includes('company')) return 'B2B (Enterprise/Fleet)';\n  if (lower.includes('အိမ်သုံး') || lower.includes('ကိုယ်ပိုင်') || lower.includes('ဆိုင်ကယ်') || lower.includes('private') || lower.includes('personal')) return 'B2C (Personal/Consumer)';\n  return 'General / Branding';\n}\n\nfunction extractCustomerMention(content) {\n  const lower = safeLower(content);\n  for (const cust of CUSTOMER_KEYWORDS) {\n    if (cust.tokens.some(token => lower.includes(token))) return cust.name;\n  }\n  return '–';\n}\n\nfunction looksLikePostRecord(post) {\n  const url = safeLower(getPostUrl(post));\n  return Boolean(\n    post.postId || post.time || post.timestamp || post.createdAt || post.publishTime ||\n    url.includes('/posts/') || url.includes('/reel/') || url.includes('/reels/') || url.includes('/videos/') ||\n    post.isVideo || post.media || post.images || post.photos || getText(post) !== '-'\n  );\n}\n\nconst items = $input.all();\nlet posts = [];\nlet reviewRecords = [];\nlet detectedBrandsSet = new Set();\nlet rawRecordCount = 0;\n\nfor (const item of items) {\n  let dataPayload = [];\n  if (Array.isArray(item.json)) dataPayload = item.json;\n  else if (Array.isArray(item.json?.data)) dataPayload = item.json.data;\n  else if (item.json && typeof item.json === 'object') dataPayload = [item.json];\n\n  for (const post of dataPayload) {\n    rawRecordCount++;\n    try {\n      if (!looksLikePostRecord(post)) {\n        reviewRecords.push({ reason: 'Non-post / page-level record', url: getPostUrl(post) || post.inputUrl || 'No URL', sample: getText(post).slice(0, 120) });\n        continue;\n      }\n\n      const targetUrl = getPostUrl(post);\n      const resolvedBrand = resolveBrandName(post) || 'Unknown / Needs Review';\n      if (resolvedBrand !== 'Unknown / Needs Review') detectedBrandsSet.add(resolvedBrand);\n\n      const reactions = toNumber(firstValue(post.likes, post.reactions, post.reactionsCount, post.likesCount, post.reactionLikeCount));\n      const comments = toNumber(firstValue(post.comments, post.commentsCount));\n      const shares = toNumber(firstValue(post.shares, post.sharesCount));\n      const engagement = reactions + comments + shares;\n      const rawTime = firstValue(post.time, post.timestamp, post.date, post.createdAt, post.publishTime);\n      const dateObj = rawTime ? new Date(rawTime) : null;\n      const hasValidDate = dateObj && !isNaN(dateObj);\n      const type = detectPostType(post);\n      const views = getViews(post);\n      let content = getText(post);\n      const fullContent = content;\n      if (content.length > 250) content = content.slice(0, 250) + '...';\n\n      const hour = hasValidDate ? parseInt(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Yangon', hour: 'numeric', hour12: false }).format(dateObj), 10) : null;\n\n      const normalized = {\n        brand: resolvedBrand,\n        page: resolvedBrand !== 'Unknown / Needs Review' ? resolvedBrand : (post.pageName || post.user?.name || 'Unknown'),\n        type,\n        content,\n        reactions,\n        comments,\n        shares,\n        engagement,\n        reach: views > 0 ? views : '–',\n        postedAt: hasValidDate ? formatMyanmarDate(dateObj) : 'Missing Time',\n        timestamp: hasValidDate ? dateObj.getTime() : 0,\n        hour,\n        timeBucket: hasValidDate ? timeBucket(hour) : 'Missing Time',\n        dayType: hasValidDate ? getYangonDayType(dateObj) : 'Missing Time',\n        customerSegment: extractCustomerSegment(fullContent),\n        customerMentioned: extractCustomerMention(fullContent),\n        mediaCount: getMediaCount(post),\n        rawType: firstValue(post.type, post.mediaType, post.__typename, post.postType) || '–',\n        pageName: post.pageName || '–',\n        facebookUrl: post.facebookUrl || '–',\n        inputUrl: post.inputUrl || '–',\n        link: targetUrl || '#',\n        reviewStatus: resolvedBrand === 'Unknown / Needs Review' || !hasValidDate ? 'Needs Review' : 'Clean'\n      };\n\n      posts.push(normalized);\n\n      if (normalized.reviewStatus === 'Needs Review') {\n        reviewRecords.push({\n          reason: resolvedBrand === 'Unknown / Needs Review' ? 'Brand not matched' : 'Missing/invalid time',\n          brand: normalized.brand,\n          pageName: normalized.pageName,\n          type: normalized.type,\n          url: normalized.link,\n          inputUrl: normalized.inputUrl,\n          content: normalized.content\n        });\n      }\n    } catch (e) {\n      reviewRecords.push({ reason: 'Processing error', message: e.message, url: getPostUrl(post) || post.inputUrl || 'No URL' });\n    }\n  }\n}\n\n// De-duplicate by URL/postId when Apify returns duplicates. Keep the richer record.\nconst byKey = new Map();\nfor (const p of posts) {\n  const key = p.link && p.link !== '#' ? p.link : `${p.brand}|${p.timestamp}|${p.content.slice(0, 60)}`;\n  const existing = byKey.get(key);\n  if (!existing || (toNumber(p.reach) + p.engagement + p.mediaCount) > (toNumber(existing.reach) + existing.engagement + existing.mediaCount)) {\n    byKey.set(key, p);\n  }\n}\nposts = Array.from(byKey.values());\n\nconst cleanPosts = posts.filter(p => p.reviewStatus === 'Clean');\n\nconst pageSummary = {};\nfor (const p of posts) {\n  if (!pageSummary[p.brand]) pageSummary[p.brand] = { brand: p.brand, posts: 0, reactions: 0, comments: 0, shares: 0, engagement: 0, reach: 0 };\n  pageSummary[p.brand].posts += 1;\n  pageSummary[p.brand].reactions += p.reactions;\n  pageSummary[p.brand].comments += p.comments;\n  pageSummary[p.brand].shares += p.shares;\n  pageSummary[p.brand].engagement += p.engagement;\n  pageSummary[p.brand].reach += toNumber(p.reach);\n}\n\nconst brands = Object.values(pageSummary).map(b => ({ ...b, avgEngagementPerPost: b.posts ? Math.round(b.engagement / b.posts) : 0 })).sort((a, b) => b.engagement - a.engagement);\n\nconst masterBrandNames = BRAND_MAP.map(b => b.brand);\nconst silentBrands = masterBrandNames.filter(b => !detectedBrandsSet.has(b));\n\nconst summarize = (arr, keyFn, initFn, addFn) => {\n  const o = {};\n  for (const p of arr) {\n    const key = keyFn(p);\n    if (!o[key]) o[key] = initFn(key, p);\n    addFn(o[key], p);\n  }\n  return Object.values(o);\n};\n\nconst times = summarize(posts.filter(p => p.timestamp > 0), p => `${p.dayType} | ${p.timeBucket}`, key => ({ label: key, posts: 0, engagement: 0 }), (s, p) => { s.posts++; s.engagement += p.engagement; }).sort((a, b) => b.engagement - a.engagement);\nconst types = summarize(posts, p => p.type, key => ({ type: key, posts: 0, engagement: 0, reach: 0 }), (s, p) => { s.posts++; s.engagement += p.engagement; s.reach += toNumber(p.reach); }).sort((a, b) => b.engagement - a.engagement);\n\nconst segmentMap = {};\nfor (const p of posts) {\n  if (!segmentMap[p.customerSegment]) segmentMap[p.customerSegment] = { segment: p.customerSegment, count: 0, brandsSet: new Set() };\n  segmentMap[p.customerSegment].count++;\n  segmentMap[p.customerSegment].brandsSet.add(p.brand);\n}\nconst segments = Object.values(segmentMap).map(s => ({ segment: s.segment, count: s.count, brands: Array.from(s.brandsSet).join(', ') })).sort((a, b) => b.count - a.count);\n\nconst topPosts = [...posts].sort((a, b) => b.engagement - a.engagement).slice(0, 3);\n\nlet weekRange = 'Current Week';\nconst dated = posts.filter(p => p.timestamp > 0).map(p => p.timestamp).sort((a, b) => a - b);\nif (dated.length > 0) {\n  const start = new Date(dated[0]).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });\n  const end = new Date(dated[dated.length - 1]).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });\n  weekRange = `${start} - ${end}`;\n}\n\nreturn [{\n  json: {\n    meta: {\n      rawRecordCount,\n      totalPosts: posts.length,\n      cleanPosts: cleanPosts.length,\n      reviewCount: reviewRecords.length,\n      totalBrands: brands.filter(b => b.brand !== 'Unknown / Needs Review').length,\n      silentBrands,\n      generatedAt: new Date().toISOString(),\n      timezone: 'Asia/Yangon',\n      engagementFormula: 'Reactions + Comments + Shares',\n      weekRange,\n      note: 'v9 includes Reels by matching brand from facebookUrl, inputUrl, pageName, user.name, aliases, and post URL. No real scraped post is silently dropped.'\n    },\n    posts,\n    reviewRecords: reviewRecords.slice(0, 50),\n    brands,\n    times,\n    types,\n    segments,\n    topPosts\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2992,
+        288
+      ],
+      "id": "52936caa-07e9-4fe7-998f-826a40f42d1f",
+      "name": "NORMALIZE & ENRICH LAYER v9 - All Types Safe"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// GPS SOCIAL SPY — EMAIL BUILDER (PRODUCTION v7.5 - FIXED NO-OVERLAP)\n// ====================================================================\n\nconst data = $input.first().json;\nconst { meta, posts, brands, times, types, segments, topPosts } = data;\n\nconst totalEngagement = brands.reduce((s, b) => s + b.engagement, 0);\n\nconst sortedBrands = brands.map(b => ({\n  ...b,\n  percent: totalEngagement ? Math.round((b.engagement / totalEngagement) * 100) : 0\n}));\n\nconst top5 = sortedBrands.slice(0, 5);\nconst rest = sortedBrands.slice(5);\n\n// ── 🎨 Premium Design Tokens ────────────────────────────────────────\nconst HERO_BG    = '#0f172a'; \nconst ACCENT_GOLD = '#f59e0b'; \nconst ACCENT_BLUE = '#2563eb'; \nconst TEXT_MAIN  = '#1e293b'; \nconst TEXT_SUB   = '#475569'; \nconst TEXT_MUTED = '#94a3b8'; \nconst BORDER     = '#e2e8f0'; \nconst ROW_ALT    = '#f8fafc'; \nconst RED        = '#ef4444'; \n\n// ── 🛠️ Mobile-Safe Table Cell Helpers (Strict Non-Breaking Layout) ──\nconst td = (v, opts = {}) => {\n  const align  = opts.align  || 'left';\n  const bold   = opts.bold   ? 'font-weight:700;' : '';\n  const color  = opts.color  ? `color:${opts.color};` : `color:${TEXT_MAIN};`;\n  const width  = opts.width  ? `width:${opts.width}; max-width:${opts.width};` : '';\n  \n  return `<td style=\"padding:12px 14px; border-bottom:1px solid ${BORDER}; font-size:13px; line-height:1.5; ${color}${bold}${width} text-align:${align}; vertical-align:middle; white-space:normal; overflow:visible;\">${v}</td>`;\n};\n\nconst th = (v, align = 'left', width = '') => {\n  const widthStr = width ? `width:${width}; max-width:${width};` : '';\n  return `<th style=\"padding:12px 14px; background:#f1f5f9; font-size:11px; font-weight:700; color:${TEXT_SUB}; text-align:${align}; border-bottom:2px solid ${BORDER}; letter-spacing:0.8px; text-transform:uppercase; ${widthStr}\">${v}</th>`;\n};\n\nconst section = (emoji, title) =>\n  `<h2 style=\"font-size:16px; font-weight:700; color:${HERO_BG}; margin:36px 0 16px; padding-bottom:10px; border-bottom:2px solid ${ACCENT_BLUE};\">${emoji}&nbsp; ${title}</h2>`;\n\nconst divider =\n  `<div style=\"height:1px; background:${BORDER}; margin:32px 0; clear:both;\"></div>`;\n\n// 🎨 Colorful Badges Generator with Safe-Wrap Container\nconst getSegmentBadge = (segment) => {\n  if (!segment || segment === '–') return '<span style=\"color:#cbd5e1;\">–</span>';\n  let bg = '#f1f5f9';\n  let color = '#475569';\n  if (segment.includes('B2B')) { bg = '#dbeafe'; color = '#1e40af'; }\n  else if (segment.includes('B2C')) { bg = '#dcfce7'; color = '#166534'; }\n  return `<div style=\"display:block; margin-bottom:4px;\"><span style=\"display:inline-block; padding:5px 10px; border-radius:20px; font-size:11px; font-weight:700; background-color:${bg}; color:${color}; white-space:nowrap; max-width:100%; text-overflow:ellipsis; overflow:hidden;\">${segment}</span></div>`;\n};\n\nconst getCustomerBadge = (name) => {\n  if (!name || name === '–') return '<span style=\"color:#cbd5e1;\">–</span>';\n  return `<div style=\"display:block; margin-top:4px;\"><span style=\"display:inline-block; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:700; background-color:#f3e8ff; color:#6b21a8; border:1px solid #e9d5ff; white-space:normal; word-break:break-word; max-width:100%;\">🏢 ${name}</span></div>`;\n};\n\n// ── Weekly Observations ───────────────────────────────────────────\nconst topBrand   = brands[0]?.brand       || null;\nconst topContent = types[0]?.type         || null;\nconst topSegment = segments[0]?.segment  || null;\n\nconst obs = [];\nobs.push(`${meta.totalPosts} brand post${meta.totalPosts !== 1 ? 's' : ''} detected during this reporting period.`);\nobs.push(`${meta.totalBrands} brand${meta.totalBrands !== 1 ? 's' : ''} showed posting activity this week.`);\nif (topBrand)   obs.push(`<b>${topBrand}</b> generated the highest observed engagement among monitored brands.`);\nif (topContent) obs.push(`${topContent} posts represented the most frequently observed content type.`);\nif (topSegment) obs.push(`${topSegment} was the most frequently detected customer segment signal.`);\n\nconst obsBullets = obs.slice(0, 5)\n  .map(o => `<li style=\"margin-bottom:10px; font-size:13px; color:${TEXT_MAIN}; line-height:1.6;\">${o}</li>`)\n  .join('');\n\n// ── Top 5 brand rows ──────────────────────────────────────────────\nconst top5Rows = top5.map((b, i) => {\n  const colors = ['#f59e0b', '#3b82f6', '#10b981', '#6366f1', '#8b5cf6'];\n  const rankColor = colors[i] || ACCENT_BLUE;\n  return `\n<li style=\"margin-bottom:16px; font-size:13px; line-height:1.7; list-style:none; position:relative; padding-left:10px;\">\n  <span style=\"color:${rankColor}; font-weight:800; font-size:16px;\">#${i+1}</span> &nbsp;\n  <b style=\"color:${HERO_BG}; font-size:14px;\">${b.brand}</b>\n  &nbsp;<span style=\"background:${rankColor}15; color:${rankColor}; padding:2px 6px; border-radius:4px; font-weight:700; font-size:12px;\">${b.engagement.toLocaleString()} Engagement</span>\n  &nbsp;<span style=\"color:${TEXT_MUTED}; font-size:12px;\">(${b.percent}% of market share)</span><br>\n  <div style=\"color:${TEXT_SUB}; font-size:12px; margin-top:4px; padding-left:26px;\">\n    Total Posts: <b style=\"color:${TEXT_MAIN};\">${b.posts}</b> &nbsp;·&nbsp;\n    Avg. Engagement/Post: <b style=\"color:${ACCENT_BLUE};\">${b.avgEngagementPerPost.toLocaleString()}</b>\n  </div>\n</li>`;\n}).join('');\n\nconst restRows = rest.map((b, i) =>\n  `<li style=\"margin-bottom:8px; font-size:13px; color:${TEXT_MAIN}; line-height:1.5;\">\n    <b>${b.brand}</b> &nbsp;–&nbsp; Engagement: <span style=\"color:${ACCENT_BLUE}; font-weight:600;\">${b.engagement.toLocaleString()}</span> (${b.percent}%)\n  </li>`\n).join('');\n\n// ── Segment table rows ────────────────────────────────────────────\nconst segRows = segments.map((s, i) => `\n<tr style=\"background:${i % 2 === 0 ? '#fff' : ROW_ALT};\">\n  ${td(getSegmentBadge(s.segment), { width: '150px' })}\n  ${td(`<b>${s.count}</b>`, { align: 'center', color: ACCENT_BLUE, width: '80px' })}\n  ${td(s.brands.split(', ').map(b => `<span style=\"font-weight:600; color:${TEXT_MAIN};\">${b}</span>`).join(', '), { width: '470px' })}\n</tr>`).join('');\n\n// ── Silent brands ─────────────────────────────────────────────────\nconst silentBlock = meta.silentBrands && meta.silentBrands.length > 0 ? `\n${section('😶', 'Brands with No Detected Posts This Week')}\n<div style=\"background:#f8fafc; padding:16px; border-radius:6px; border:1px solid ${BORDER};\">\n  <ul style=\"margin:0; padding-left:15px; font-size:13px; color:${TEXT_MAIN}; line-height:2.2;\">\n    ${meta.silentBrands.map(b => `<li><span style=\"color:${TEXT_SUB}; font-weight:600;\">${b}</span></li>`).join('')}\n  </ul>\n</div>` : '';\n\n// ── Top posts table rows ──────────────────────────────────────────\nconst topPostRows = topPosts.map((p, i) => `\n<tr style=\"background:${i % 2 === 0 ? '#fff' : ROW_ALT};\">\n  ${td(`<span style=\"background:${ACCENT_GOLD}20; color:${ACCENT_GOLD}; padding:2px 6px; border-radius:4px; font-weight:700;\">#${i+1}</span>`, { align: 'center', width: '50px' })}\n  ${td(`<b>${p.brand}</b>`, { width: '130px' })}\n  ${td(`<span style=\"font-size:12px; font-weight:600; color:${TEXT_SUB};\">${p.type}</span>`, { width: '80px' })}\n  ${td(p.content.slice(0, 120).replace(/</g,'&lt;').replace(/>/g,'&gt;') + (p.content.length > 120 ? '…' : ''), { width: '330px' })}\n  ${td(`<b style=\"color:${RED}; font-size:14px;\">${p.engagement.toLocaleString()}</b>`, { align: 'center', width: '110px' })}\n  ${td(p.link && p.link !== '#' ? `<a href=\"${p.link}\" target=\"_blank\" style=\"display:inline-block; padding:4px 12px; background:${ACCENT_BLUE}; color:#fff; text-decoration:none; font-size:11px; font-weight:700; border-radius:4px;\">Link</a>` : '–', { align: 'center', width: '80px' })}\n</tr>`).join('');\n\n// ── Full records table rows ───────────────────────────────────────\nposts.sort((a, b) => b.timestamp - a.timestamp);\nconst postRows = posts.map((p, i) => `\n<tr style=\"background:${i % 2 === 0 ? '#fff' : ROW_ALT};\">\n  ${td(`<b>${p.brand}</b>`, { width: '150px' })}\n  ${td(p.type, { width: '70px' })}\n  ${td(`\n    <div style=\"min-width:140px; display:block;\">\n      ${getSegmentBadge(p.customerSegment || '–')}\n      ${getCustomerBadge(p.customerMentioned)}\n    </div>\n  `, { width: '180px' })}\n  ${td(p.content.slice(0, 140).replace(/</g,'&lt;').replace(/>/g,'&gt;') + (p.content.length > 140 ? '…' : ''), { width: '320px' })}\n  ${td(p.reactions.toLocaleString(), { align: 'center', width: '60px' })}\n  ${td(p.comments.toLocaleString(),  { align: 'center', width: '60px' })}\n  ${td(p.shares.toLocaleString(),    { align: 'center', width: '60px' })}\n  ${td(`<b style=\"color:${ACCENT_BLUE};\">${p.engagement.toLocaleString()}</b>`, { align: 'center', width: '85px' })}\n  ${td(p.postedAt || '–', { color: TEXT_SUB, width: '140px' })}\n  ${td(p.link && p.link !== '#' ? `<a href=\"${p.link}\" target=\"_blank\" style=\"color:${ACCENT_BLUE}; text-decoration:none; font-weight:700;\">View</a>` : '–', { align: 'center', width: '60px' })}\n</tr>`).join('');\n\n// ── HTML TEMPLATE BUILD ───────────────────────────────────────────\nconst html = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>GPS Facebook Brand Performance Report</title>\n  <style>\n    html, body { margin: 0 auto !important; padding: 0 !important; width: 100% !important; background: #f1f5f9; }\n    * { box-sizing: border-box; }\n    \n    /* 📱 HORIZONTAL SCROLL CONTEXT FOR HIGH-DENSITY TABLES */\n    .table-container { \n      width: 100% !important; \n      overflow-x: auto !important; \n      -webkit-overflow-scrolling: touch !important; \n      margin-bottom: 20px; \n      border: 1px solid ${BORDER}; \n      border-radius: 8px;\n      background: #ffffff;\n    }\n    \n    .desktop-table { \n      width: 100% !important; \n      border-collapse: collapse !important;\n      table-layout: fixed !important;\n    }\n\n    @media only screen and (max-width: 680px) {\n      .main-container { padding: 16px !important; width: 100% !important; max-width: 100% !important; border-radius: 0px !important; }\n      .responsive-col { display: block !important; width: 100% !important; padding: 4px 0 !important; margin-bottom: 8px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background-color:#f1f5f9; margin:0; padding:20px 0;\">\n<center style=\"width: 100%; background-color: #f1f5f9;\">\n\n  <div class=\"main-container\" style=\"max-width:1100px; width:96%; margin:0 auto; background:#ffffff; padding:32px; border-radius:12px; text-align:left; box-shadow:0 4px 10px rgba(0,0,0,0.04);\">\n\n    <div style=\"background:${HERO_BG}; padding:24px; border-radius:8px; margin-bottom:24px;\">\n      <h1 style=\"margin:0 0 6px; font-size:20px; font-weight:700; color:#ffffff; line-height:1.3;\">📊 GPS Weekly Brand Performance & Market Shares</h1>\n      <p style=\"margin:0; font-size:12px; color:${TEXT_MUTED}; line-height:1.4;\">\n        Period: <b style=\"color:${ACCENT_GOLD};\">${meta.weekRange}</b> &nbsp;·&nbsp; Generated: ${\n          new Intl.DateTimeFormat('en-GB', {\n            timeZone: 'Asia/Yangon',\n            day: '2-digit',\n            month: 'short',\n            year: 'numeric',\n          }).format(new Date(meta.generatedAt))\n        }, ${\n          new Intl.DateTimeFormat('en-US', {\n            timeZone: 'Asia/Yangon',\n            hour: '2-digit',\n            minute: '2-digit',\n            hour12: true,\n          }).format(new Date(meta.generatedAt))\n        }\n      </p>\n    </div>\n\n    <div style=\"width:100%; clear:both;\">\n      <div class=\"responsive-col\" style=\"display:inline-block; width:25%; vertical-align:top;\">\n        <div class=\"stat-card\" style=\"margin:4px; padding:16px; background:#f8fafc; border:1px solid ${BORDER}; border-radius:6px; text-align:center; border-top:4px solid ${ACCENT_BLUE};\">\n          <div style=\"font-size:24px; font-weight:800; color:${HERO_BG};\">${meta.totalPosts}</div>\n          <div style=\"font-size:10px; color:${TEXT_SUB}; margin-top:4px; font-weight:700; text-transform:uppercase;\">Total Posts</div>\n        </div>\n      </div>\n      <div class=\"responsive-col\" style=\"display:inline-block; width:25%; vertical-align:top;\">\n        <div class=\"stat-card\" style=\"margin:4px; padding:16px; background:#f8fafc; border:1px solid ${BORDER}; border-radius:6px; text-align:center; border-top:4px solid ${ACCENT_GOLD};\">\n          <div style=\"font-size:24px; font-weight:800; color:${HERO_BG};\">${totalEngagement.toLocaleString()}</div>\n          <div style=\"font-size:10px; color:${TEXT_SUB}; margin-top:4px; font-weight:700; text-transform:uppercase;\">Engagement</div>\n        </div>\n      </div>\n      <div class=\"responsive-col\" style=\"display:inline-block; width:25%; vertical-align:top;\">\n        <div class=\"stat-card\" style=\"margin:4px; padding:16px; background:#f8fafc; border:1px solid ${BORDER}; border-radius:6px; text-align:center; border-top:4px solid #10b981;\">\n          <div style=\"font-size:24px; font-weight:800; color:${HERO_BG};\">${meta.totalBrands}</div>\n          <div style=\"font-size:10px; color:${TEXT_SUB}; margin-top:4px; font-weight:700; text-transform:uppercase;\">Active Brands</div>\n        </div>\n      </div>\n      <div class=\"responsive-col\" style=\"display:inline-block; width:25%; vertical-align:top;\">\n        <div class=\"stat-card\" style=\"margin:4px; padding:16px; background:#f8fafc; border:1px solid ${BORDER}; border-radius:6px; text-align:center; border-top:4px solid #64748b;\">\n          <div style=\"font-size:24px; font-weight:800; color:${HERO_BG};\">${meta.silentBrands ? meta.silentBrands.length : 0}</div>\n          <div style=\"font-size:10px; color:${TEXT_SUB}; margin-top:4px; font-weight:700; text-transform:uppercase;\">Silent Brands</div>\n        </div>\n      </div>\n    </div>\n\n    ${divider}\n\n    ${section('🏆', 'Most Engaged Brands This Week')}\n    <div style=\"padding:2px 0;\">\n      ${top5Rows}\n    </div>\n\n    ${rest.length > 0 ? `\n    <div style=\"margin-top:16px; background:#f8fafc; padding:14px; border-radius:6px; border-left:4px solid ${TEXT_MUTED};\">\n      <span style=\"font-size:11px; font-weight:700; color:${TEXT_SUB}; text-transform:uppercase; display:block; margin-bottom:6px;\">⚖️ Other Observed Activity</span>\n      <ol start=\"6\" style=\"margin:0; padding-left:15px;\">\n        ${restRows}\n      </ol>\n    </div>` : ''}\n\n    ${divider}\n\n    ${segments.length > 0 ? `\n    ${section('🎯', 'Observed Customer Segment Signals')}\n    <div class=\"table-container\">\n      <table class=\"desktop-table\" style=\"min-width: 700px;\">\n        <thead>\n          <tr>\n            ${th('Customer Segment', 'left', '150px')}\n            ${th('Count', 'center', '80px')}\n            ${th('Active Brands', 'left', '470px')}\n          </tr>\n        </thead>\n        <tbody>${segRows}</tbody>\n      </table>\n    </div>` : ''}\n\n    ${divider}\n\n    <div style=\"width:100%; clear:both;\">\n      <div class=\"responsive-col\" style=\"display:inline-block; width:48%; vertical-align:top; margin-right:2%;\">\n        ${section('⏰', 'Peak Engagement Windows')}\n        <ol style=\"margin:0; padding-left:15px; font-size:13px; color:${TEXT_MAIN}; line-height:1.8;\">\n          ${times.slice(0, 3).map(t => `<li><b>${t.label}</b><br><span style=\"color:${TEXT_SUB}; font-size:12px;\">Posts: ${t.posts} · <span style=\"color:${ACCENT_BLUE}; font-weight:600;\">Eng: ${t.engagement.toLocaleString()}</span></span></li>`).join('')}\n        </ol>\n      </div>\n      <div class=\"responsive-col\" style=\"display:inline-block; width:48%; vertical-align:top;\">\n        ${section('📸', 'Content Format Distribution')}\n        <ol style=\"margin:0; padding-left:15px; font-size:13px; color:${TEXT_MAIN}; line-height:1.8;\">\n          ${types.map(t => `<li><b>${t.type}</b><br><span style=\"color:${TEXT_SUB}; font-size:12px;\">Posts: ${t.posts} · <span style=\"color:${ACCENT_BLUE}; font-weight:600;\">Eng: ${t.engagement.toLocaleString()}</span></span></li>`).join('')}\n        </ol>\n      </div>\n    </div>\n\n    ${silentBlock}\n\n    ${divider}\n\n    ${section('📌', 'Executive Summary & Observations')}\n    <div style=\"background:#f0fdf4; border:1px solid #bbf7d0; padding:16px; border-radius:8px;\">\n      <ul style=\"margin:0; padding-left:15px;\">\n        ${obsBullets}\n      </ul>\n    </div>\n\n    ${divider}\n\n    ${section('🔥', `Top Content Spotlight (${topPosts.length} High-Performers)`)}\n    <div class=\"table-container\">\n      <table class=\"desktop-table\" style=\"min-width: 780px;\">\n        <thead>\n          <tr>\n            ${th('#', 'center', '50px')}\n            ${th('Brand', 'left', '130px')}\n            ${th('Type', 'left', '80px')}\n            ${th('Content Preview', 'left', '330px')}\n            ${th('Engagement', 'center', '110px')}\n            ${th('Action', 'center', '80px')}\n          </tr>\n        </thead>\n        <tbody>${topPostRows}</tbody>\n      </table>\n    </div>\n\n    ${divider}\n\n    ${section('📋', 'Complete Brand Activity Ledger')}\n    <div class=\"table-container\">\n      <table class=\"desktop-table\" style=\"min-width: 1100px;\">\n        <thead>\n          <tr>\n            ${th('Brand', 'left', '150px')}\n            ${th('Type', 'left', '70px')}\n            ${th('Segment / Mentioned', 'left', '180px')}\n            ${th('Content Preview', 'left', '320px')}\n            ${th('👍', 'center', '60px')}\n            ${th('💬', 'center', '60px')}\n            ${th('📢', 'center', '60px')}\n            ${th('Total 🔥', 'center', '85px')}\n            ${th('Posted Time', 'left', '140px')}\n            ${th('Source', 'center', '60px')}\n          </tr>\n        </thead>\n        <tbody>${postRows}</tbody>\n      </table>\n    </div>\n\n    ${divider}\n\n    <div style=\"background:#f8fafc; border:1px solid ${BORDER}; padding:20px; border-radius:8px; margin-top:10px;\">\n      <h3 style=\"font-size:13px; font-weight:700; color:${HERO_BG}; margin:0 0 12px 0; text-transform:uppercase; letter-spacing:0.5px;\">📖 Metric Glossary & Explanations</h3>\n      <div style=\"font-size:12px; line-height:1.6; color:${TEXT_SUB};\">\n        <p style=\"margin:4px 0;\"><b>• Total Engagement:</b> The sum of all public interactions (Reactions + Comments + Shares) across all tracked posts.</p>\n        <p style=\"margin:4px 0;\"><b>• Avg. Engagement/Post:</b> The performance average of a single post (Total Engagement ÷ Total Posts).</p>\n        <p style=\"margin:4px 0;\"><b>• Market Share (%):</b> The brand's share of total industry attention (Brand Engagement ÷ Total Industry Engagement).</p>\n      </div>\n    </div>\n\n    <div style=\"font-size:11px; color:${TEXT_MUTED}; margin-top:32px; padding-top:16px; border-top:1px solid ${BORDER}; text-align:center;\">\n      <b>GPS Social Spy Report</b> &nbsp;·&nbsp; Robust Safe-Wrap Table Layout\n    </div>\n\n  </div>\n</center>\n</body>\n</html>`;\n\nreturn [{\n  json: {\n    subject: `📍 GPS Social Spy: Facebook Intelligence Report [${meta.weekRange}]`,\n    emailBody: html,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3312,
+        288
+      ],
+      "id": "c4b0b264-ecd5-4219-9af3-1af60c5ddbc5",
+      "name": "EMAIL BUILDER - All Types Report"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 9,
+              "triggerAtMinute": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1712,
+        400
+      ],
+      "id": "dece1614-924b-43df-9bd8-c13ac16453f7",
+      "name": "Schedule Trigger (Every Monday 9AM)1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XsaFonQafrsIk0_PpBD1vQnIiji-VNExIh9kc9iLWnI",
+          "mode": "list",
+          "cachedResultName": "2026ISPCompetitorsList",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XsaFonQafrsIk0_PpBD1vQnIiji-VNExIh9kc9iLWnI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1758708783,
+          "mode": "list",
+          "cachedResultName": "Copy of GPS ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XsaFonQafrsIk0_PpBD1vQnIiji-VNExIh9kc9iLWnI/edit#gid=1758708783"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1968,
+        400
+      ],
+      "id": "99e23e51-c4c0-49fc-8b68-d60b1643f0da",
+      "name": "Read Competitor List1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "loJJdVr2wQJ7qzU1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2288,
+        400
+      ],
+      "id": "15ee1d0e-a18b-4afc-90fa-b9244cd4e66a",
+      "name": "Loop Over Competitors1"
+    },
+    {
+      "parameters": {
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "KoJrdxJCTtpon81KY",
+          "mode": "list",
+          "cachedResultName": "Facebook Posts Scraper (apify/facebook-posts-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/KoJrdxJCTtpon81KY/input"
+        },
+        "customBody": "={\n    \"captionText\": true,\n    \"onlyPostsNewerThan\": \"{{ $now.minus({days: 7}).toISODate() }}\",\n    \"onlyPostsOlderThan\": \"{{ $now.plus({days: 1}).toISODate() }}\",\n    \"startUrls\": [\n        {\n            \"url\": \"{{ $json.Link }}\"\n        }\n    ]\n}"
+      },
+      "id": "af5ca3c6-8a45-4c9b-a0dc-e609edfd8a7f",
+      "name": "Facebook Posts Scraper1",
+      "type": "@apify/n8n-nodes-apify.apify",
+      "position": [
+        2624,
+        560
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "apifyApi": {
+          "id": "zFtQGgc67l6STz9d",
+          "name": "ATDK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Datasets",
+        "datasetId": "={{ $json.defaultDatasetId }}",
+        "limit": null,
+        "options": {}
+      },
+      "id": "4b92156b-63de-4ba3-bffb-d8b6cc50fd9f",
+      "name": "Get Dataset Items1",
+      "type": "@apify/n8n-nodes-apify.apify",
+      "position": [
+        2640,
+        864
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "apifyApi": {
+          "id": "zFtQGgc67l6STz9d",
+          "name": "ATDK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        288
+      ],
+      "id": "3013427b-dacb-4719-a1fc-015280396b11",
+      "name": "Aggregate All Posts1"
+    },
+    {
+      "parameters": {
+        "sendTo": "=marketing@agbcommunication.com,\nsithuaung@agbcommunication.com,\nsumonkyaw@agbcommunication.com,\nhazel.sumyat@agbcommunication.com,\nyeyint@agbcommunication.com,\nphyonyinyithet@agbcommunication.com,\neaintthawtarlin@agbcommunication.com,\nwintnadiaung@agbcommunication.com,\nsawblessingtun@agbcommunication.com,\nkokozin@agbcommunication.com,\nnanshweyin@agbcommunication.com,\nchawthaengone@agbcommunication.com,\nsithuhtet@agbcommunication.com,\nsunlwinhtun@agbcommunication.com,\nhsumyatoo@agbcommunication.com,\nkhinsumyatkyaw@agbcommunication.com,\nthirizhon@agbcommunication.com,\nzanyelin@agbcommunication.com, \nyehtetaung2@agbcommunication.com,\nhtutaungkyaw@agbcommunication.com,\nsumyatthwe@agbcommunication.com,\nkhinchawsuwin@agbcommunication.com,\nkyiphyuhan@agbcommunication.com,\nzaylatt@agbcommunication.com,\nayethandarkyaw@agbcommunication.com,\nhtethtethlaing@agbcommunication.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.emailBody }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        3008,
+        704
+      ],
+      "id": "c6d83900-3b81-4d58-af3e-a978a2bc849e",
+      "name": "Send Report to Marketing Team1",
+      "webhookId": "a3a3f5b0-a66b-442e-8cc4-80aa6e0ce4a8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AHnor92JnqgLA4fE",
+          "name": "Htet Gmail Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===================================================\n// TIKTOK GPS SPY - NORMALIZE + BRAND + TYPE DETECTION v3\n// Covers TikTok Video, Slideshow / Photo Post, Live, Unknown / Review\n// Engagement formula: Likes + Comments + Shares + Saves\n// ===================================================\n\nconst MMT_OFFSET_MS = 390 * 60 * 1000; // UTC+6:30\n\nfunction toNumber(v) {\n  if (v === null || v === undefined || v === '' || v === '–') return 0;\n  if (typeof v === 'number') return Number.isFinite(v) ? v : 0;\n  const cleaned = String(v).replace(/,/g, '').trim();\n  const n = Number(cleaned);\n  return Number.isFinite(n) ? n : 0;\n}\n\nfunction firstValue(...values) {\n  for (const v of values) {\n    if (v !== null && v !== undefined && v !== '') return v;\n  }\n  return null;\n}\n\nfunction normalizeKey(str) {\n  if (!str) return '';\n  return String(str).toLowerCase().replace(/^@/, '').replace(/[^a-z0-9]/g, '');\n}\n\nfunction safeText(v) {\n  return String(v || '').trim();\n}\n\nfunction getMMTHour(unixMs) {\n  return new Date(unixMs + MMT_OFFSET_MS).getUTCHours();\n}\n\nfunction formatMMT(unixSec) {\n  if (!unixSec) return 'Missing Time';\n  const d = new Date(unixSec * 1000 + MMT_OFFSET_MS);\n  if (isNaN(d)) return 'Invalid Time';\n  const day = String(d.getUTCDate()).padStart(2, '0');\n  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];\n  const mon = months[d.getUTCMonth()];\n  const yr = d.getUTCFullYear();\n  const hh = d.getUTCHours();\n  const mm = String(d.getUTCMinutes()).padStart(2, '0');\n  const ampm = hh >= 12 ? 'PM' : 'AM';\n  const h12 = hh % 12 || 12;\n  return `${day} ${mon} ${yr}, ${h12}:${mm} ${ampm} MMT`;\n}\n\nfunction timeBucket(mmtHour) {\n  if (mmtHour === null || mmtHour === undefined || isNaN(mmtHour)) return 'Missing Time';\n  if (mmtHour >= 6  && mmtHour < 10) return 'Morning (6-10 AM)';\n  if (mmtHour >= 10 && mmtHour < 14) return 'Midday (10 AM-2 PM)';\n  if (mmtHour >= 14 && mmtHour < 18) return 'Afternoon (2-6 PM)';\n  if (mmtHour >= 18 && mmtHour < 22) return 'Evening (6-10 PM)';\n  return 'Late Night (10 PM-6 AM)';\n}\n\nfunction detectTheme(text) {\n  if (!text) return 'General';\n  const t = String(text).toLowerCase();\n  if (/ဝန်ထမ်း|field|manager|လုပ်ငန်းရှင်|ကုန်ကား|fleet|b2b|business|company/.test(t)) return 'Fleet / B2B';\n  if (/ကလေး|မိဘ|ခွေး|ကြောင်|pet|child|family|smart tag|personal/.test(t)) return 'Family / Personal';\n  if (/ခိုး|ပျောက်|steal|theft|waterproof|anti|လုံခြုံ|security/.test(t)) return 'Theft / Security';\n  if (/warranty|4g|2g|real.?time|geo.?fence|playback|vl103|gs900|spec|feature/.test(t)) return 'Product Spec';\n  if (/မန့်|comment|mention|ရှိလား|\\?|😁|humor|voiceeffect|duet|stitch/.test(t)) return 'Engagement / Humor';\n  return 'General';\n}\n\n// Brand aliases. Add new profile handles here when the Google Sheet grows.\nconst brandMap = {\n  'happygpsofficial1':    'HAPPY GPS Myanmar',\n  'happygpsmyanmar':      'HAPPY GPS Myanmar',\n  'happygpsmm':           'HAPPY GPS Myanmar',\n  'doesoh':               'DOE SOH GPS TRACKER',\n  'doesohgpstracker':     'DOE SOH GPS TRACKER',\n  'smarttrack01':         'AGB Smart Track',\n  'agbsmarttrack':        'AGB Smart Track',\n  'fastgpsandelectronic': 'FAST GPS & Electronic',\n  'fastgps':              'FAST GPS & Electronic',\n  'gpsservicemyanmar':    'GPS Service Myanmar',\n  'sinotrackofficial':    'SinoTrack GPS',\n  'sinotrackgpsmyanmar':  'SinoTrack GPS',\n  'amazingtrackmyanmar':  'Amazing Track',\n  'amazingtrack':         'Amazing Track',\n  'gonlologpsmyanm':      'Gonlolo GPS Myanmar',\n  'gonlologpsmyanmar':    'Gonlolo GPS Myanmar',\n  'trackmanmyanmar':      'Track Man Myanmar',\n  'gpstrackmanmyanmar':   'Track Man Myanmar',\n  'mmgpssolution':        'MM GPS Solution',\n  'gpsblackboxmyanmar':   'MM GPS Solution',\n  'gpsburma':             'GPS Burma',\n  'gpsburma25':           'GPS Burma',\n  'trackerstargps':       'Tracker Star GPS System'\n};\n\nconst ALL_PROFILES = [\n  'amazingtrackmyanmar', 'gonlologpsmyanm', 'happygpsofficial1',\n  'doesoh', 'smarttrack01', 'trackmanmyanmar', 'fastgpsandelectronic',\n  'gpsservicemyanmar', 'sinotrackofficial', 'mmgpssolution',\n  'gpsburma', 'trackerstargps'\n];\n\nfunction getInputHandle(data) {\n  const input = firstValue(data.input, data.inputUrl, data.url, data.webVideoUrl, data.authorMeta?.name, data.authorMeta?.nickName);\n  const s = String(input || '').trim();\n  const atMatch = s.match(/@([A-Za-z0-9._-]+)/);\n  if (atMatch) return atMatch[1];\n  const profileMatch = s.match(/tiktok\\.com\\/([^/]+)/i);\n  if (profileMatch) return profileMatch[1].replace('@', '');\n  return s.replace('@', '');\n}\n\nfunction resolveBrand(data) {\n  const possibleKeys = [\n    data?.authorMeta?.name,\n    data?.authorMeta?.nickName,\n    data?.authorMeta?.uniqueId,\n    data?.author?.uniqueId,\n    data?.author?.nickname,\n    data?.input,\n    data?.inputUrl,\n    getInputHandle(data)\n  ].filter(Boolean).map(normalizeKey).filter(Boolean);\n\n  for (const key of possibleKeys) {\n    if (brandMap[key]) return brandMap[key];\n  }\n\n  const nick = safeText(data?.authorMeta?.nickName || data?.author?.nickname);\n  const name = safeText(data?.authorMeta?.name || data?.author?.uniqueId || getInputHandle(data));\n  return nick || name || 'Unknown / Needs Review';\n}\n\nfunction detectTikTokPostType(data) {\n  const textBlob = [\n    data.type,\n    data.itemType,\n    data.mediaType,\n    data.awemeType,\n    data.createType,\n    data.videoMeta?.format,\n    data.videoMeta?.codecType\n  ].filter(Boolean).join(' ').toLowerCase();\n\n  const imageArrays = [\n    data.slideshowImageUrls,\n    data.imagePost?.images,\n    data.imagePost,\n    data.images,\n    data.imageUrls,\n    data.photos,\n    data.photoUrls\n  ];\n  const hasImageArray = imageArrays.some(v => Array.isArray(v) && v.length > 0);\n\n  if (data.isSlideshow === true || data.is_slideshow === true || hasImageArray || textBlob.includes('slideshow') || textBlob.includes('photo')) {\n    return 'Slideshow / Photo Post';\n  }\n\n  if (data.isLive === true || data.live === true || textBlob.includes('live')) {\n    return 'Live';\n  }\n\n  const hasVideoSignal = !!(\n    data.videoMeta || data.videoUrl || data.webVideoUrl || data.videoUrlNoWaterMark ||\n    data.videoUrlNoWaterMark || data.playAddr || data.downloadAddr || data.video?.playAddr ||\n    data.id || data.playCount !== undefined\n  );\n\n  if (hasVideoSignal) return 'Video';\n  return 'Unknown / Needs Review';\n}\n\nfunction getPostLink(data, handle) {\n  return firstValue(\n    data.webVideoUrl,\n    data.url,\n    data.shareUrl,\n    data.videoUrl,\n    data.id && handle ? `https://www.tiktok.com/@${handle}/video/${data.id}` : null,\n    '#'\n  );\n}\n\nfunction getCreateTime(data) {\n  const raw = firstValue(data.createTime, data.createTimeISO, data.createdAt, data.timestamp);\n  if (!raw) return null;\n  if (typeof raw === 'number') {\n    // TikTok createTime is usually seconds. If it looks like ms, convert to seconds.\n    return raw > 9999999999 ? Math.floor(raw / 1000) : raw;\n  }\n  const asNum = Number(raw);\n  if (Number.isFinite(asNum)) return asNum > 9999999999 ? Math.floor(asNum / 1000) : asNum;\n  const parsed = Date.parse(raw);\n  return Number.isFinite(parsed) ? Math.floor(parsed / 1000) : null;\n}\n\nfunction getContent(data) {\n  return firstValue(data.text, data.description, data.desc, data.caption, data.title) || '-';\n}\n\n// Aggregate node returns one item with json.data containing all dataset items.\nconst postsRaw = Array.isArray($input.first().json.data) ? $input.first().json.data : [];\nconst posts = [];\nconst reviewRecords = [];\nconst seenBrands = new Set();\nconst seenProfiles = new Set();\n\nfor (const data of postsRaw) {\n  const handle = normalizeKey(getInputHandle(data));\n  if (handle) seenProfiles.add(handle);\n  const brand = resolveBrand(data);\n\n  // Keep non-post records for audit/review instead of losing them.\n  if (data.error === 'NOT_FOUND') {\n    reviewRecords.push({\n      brand_name: brand,\n      profile: getInputHandle(data),\n      reason: 'Profile not found',\n      raw_status: data.error,\n      link: firstValue(data.url, data.inputUrl, data.input, '#')\n    });\n    continue;\n  }\n\n  if (data.note && String(data.note).toLowerCase().includes('no videos')) {\n    seenBrands.add(brand);\n    reviewRecords.push({\n      brand_name: brand,\n      profile: getInputHandle(data),\n      reason: 'No videos in selected period',\n      raw_status: data.note,\n      link: firstValue(data.url, data.inputUrl, data.input, '#')\n    });\n    continue;\n  }\n\n  const postId = firstValue(data.id, data.videoId, data.awemeId);\n  const createTime = getCreateTime(data);\n\n  // If it does not look like a post, keep it for review but do not pollute report metrics.\n  if (!postId && !createTime && !data.playCount && !data.diggCount) {\n    reviewRecords.push({\n      brand_name: brand,\n      profile: getInputHandle(data),\n      reason: 'Non-post/profile-level record',\n      raw_status: firstValue(data.note, data.error, 'No post identifiers'),\n      link: firstValue(data.url, data.inputUrl, data.input, '#')\n    });\n    continue;\n  }\n\n  seenBrands.add(brand);\n\n  const views    = toNumber(firstValue(data.playCount, data.views, data.viewCount));\n  const likes    = toNumber(firstValue(data.diggCount, data.likes, data.likeCount));\n  const comments = toNumber(firstValue(data.commentCount, data.comments));\n  const shares   = toNumber(firstValue(data.shareCount, data.shares));\n  const saves    = toNumber(firstValue(data.collectCount, data.saveCount, data.saves, data.bookmarkCount));\n  const engagement = likes + comments + shares + saves;\n\n  const unixMs = createTime ? createTime * 1000 : 0;\n  const mmtHour = unixMs ? getMMTHour(unixMs) : null;\n  const dateForDay = unixMs ? new Date(unixMs + MMT_OFFSET_MS) : null;\n\n  let content = getContent(data);\n  if (content.length > 250) content = content.slice(0, 250) + '...';\n\n  const postType = detectTikTokPostType(data);\n  const link = getPostLink(data, handle || normalizeKey(data?.authorMeta?.name));\n\n  posts.push({\n    brand_name: brand,\n    tiktok_handle: data?.authorMeta?.name || getInputHandle(data),\n    content,\n    post_type: postType,\n    theme: detectTheme(getContent(data)),\n    views,\n    likes,\n    comments,\n    shares,\n    saves,\n    engagement,\n    engagement_rate: views > 0 ? ((engagement / views) * 100).toFixed(2) + '%' : '0%',\n    postedAt: formatMMT(createTime),\n    timestamp: unixMs,\n    mmtHour,\n    timeBucket: timeBucket(mmtHour),\n    dayType: dateForDay ? ([0,6].includes(dateForDay.getUTCDay()) ? 'Weekend' : 'Weekday') : 'Missing Time',\n    is_slideshow: postType === 'Slideshow / Photo Post',\n    video_duration: toNumber(data?.videoMeta?.duration),\n    effect_count: Array.isArray(data.effectStickers) ? data.effectStickers.length : 0,\n    link,\n    raw_id: postId || '–'\n  });\n}\n\n// Aggregate per brand.\nconst statsMap = {};\nfor (const p of posts) {\n  if (!statsMap[p.brand_name]) {\n    statsMap[p.brand_name] = {\n      brand_name: p.brand_name,\n      post_count: 0,\n      total_views: 0,\n      total_likes: 0,\n      total_comments: 0,\n      total_shares: 0,\n      total_saves: 0,\n      total_engagement: 0,\n      themes: {},\n      post_types: {}\n    };\n  }\n  const s = statsMap[p.brand_name];\n  s.post_count++;\n  s.total_views      += p.views;\n  s.total_likes      += p.likes;\n  s.total_comments   += p.comments;\n  s.total_shares     += p.shares;\n  s.total_saves      += p.saves;\n  s.total_engagement += p.engagement;\n  s.themes[p.theme]  = (s.themes[p.theme] || 0) + 1;\n  s.post_types[p.post_type] = (s.post_types[p.post_type] || 0) + 1;\n}\n\nconst summary = Object.values(statsMap).map(s => ({\n  ...s,\n  engagement_rate: s.total_views > 0 ? ((s.total_engagement / s.total_views) * 100).toFixed(2) + '%' : '0%',\n  dominant_theme: Object.entries(s.themes).sort((a,b) => b[1]-a[1])[0]?.[0] || 'General',\n  dominant_post_type: Object.entries(s.post_types).sort((a,b) => b[1]-a[1])[0]?.[0] || 'Unknown'\n})).sort((a,b) => b.total_engagement - a.total_engagement);\n\n// Content type distribution.\nconst postTypeSummaryMap = {};\nfor (const p of posts) {\n  if (!postTypeSummaryMap[p.post_type]) {\n    postTypeSummaryMap[p.post_type] = { post_type: p.post_type, posts: 0, views: 0, engagement: 0, saves: 0 };\n  }\n  postTypeSummaryMap[p.post_type].posts++;\n  postTypeSummaryMap[p.post_type].views += p.views;\n  postTypeSummaryMap[p.post_type].engagement += p.engagement;\n  postTypeSummaryMap[p.post_type].saves += p.saves;\n}\nconst post_type_summary = Object.values(postTypeSummaryMap).sort((a,b) => b.engagement - a.engagement);\n\n// Brands with profile but zero posts this week.\nconst inactiveBrands = [...seenBrands]\n  .filter(b => !statsMap[b])\n  .map(b => ({ brand_name: b, reason: 'No posts this week' }));\n\n// Include hardcoded profiles that were not seen at all.\nfor (const p of ALL_PROFILES) {\n  const brand = brandMap[normalizeKey(p)] || p;\n  const wasSeen = seenBrands.has(brand) || seenProfiles.has(normalizeKey(p));\n  const alreadyInactive = inactiveBrands.some(x => x.brand_name === brand);\n  if (!wasSeen && !alreadyInactive) inactiveBrands.push({ brand_name: brand, reason: 'No data returned' });\n}\n\n// Add profile errors from review records.\nfor (const r of reviewRecords) {\n  if (r.reason === 'Profile not found') {\n    const exists = inactiveBrands.some(x => x.brand_name === r.brand_name && x.reason === 'Profile not found');\n    if (!exists) inactiveBrands.push({ brand_name: r.brand_name, reason: 'Profile not found' });\n  }\n}\n\nreturn [{\n  json: {\n    generated_at: new Date().toISOString(),\n    total_raw_records: postsRaw.length,\n    total_posts: posts.length,\n    brands_detected: summary.length,\n    engagement_formula: 'Likes + Comments + Shares + Saves',\n    posts,\n    summary,\n    post_type_summary,\n    inactive_brands: inactiveBrands,\n    review_records: reviewRecords,\n    review_count: reviewRecords.length,\n    note: 'TikTok content types are detected as Video, Slideshow / Photo Post, Live, or Unknown / Needs Review. Engagement includes saves.'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2832,
+        1552
+      ],
+      "id": "e7205824-f687-4750-887a-a41a474f91de",
+      "name": "Normalize Brand Data v3 - All Types"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json || {};\nconst summary = data.summary || [];\nconst posts = data.posts || [];\nconst inactiveBrands = data.inactive_brands || [];\nconst observations = data.observations || [];\nconst postTypeSummary = data.post_type_summary || [];\nconst reviewRecords = data.review_records || [];\n\nfunction safeNum(n) { return Number(n) || 0; }\nfunction esc(v) {\n  return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\n}\nfunction formatMMDate(dateStr) {\n  if (!dateStr || dateStr === '-' || dateStr === 'undefined') return 'No Date';\n  return dateStr;\n}\n\nconst filteredInactiveBrands = inactiveBrands.filter(b => !(b.reason && String(b.reason).includes('404')));\nsummary.sort((a, b) => safeNum(b.total_engagement) - safeNum(a.total_engagement));\nconst activeBrands = summary.filter(b => safeNum(b.total_views) > 0 || safeNum(b.total_engagement) > 0 || safeNum(b.post_count) > 0);\n\nconst activeRows = activeBrands.map((b, i) => {\n  const rankColors = ['#4f46e5', '#06b6d4', '#6366f1'];\n  const rankColor = i < 3 ? rankColors[i] : '#64748b';\n  return `\n<tr style=\"border-bottom:1px solid #e2e8f0; ${i % 2 === 0 ? '' : 'background:#f8fafc;'}\">\n  <td style=\"padding:14px 15px; font-weight:bold; color:${rankColor}; font-size:15px; text-align:center;\">${i + 1}</td>\n  <td style=\"padding:14px 15px; font-weight:700; font-size:13px; color:#0f172a;\">${esc(b.brand_name)}</td>\n  <td style=\"padding:14px 15px; text-align:center; font-size:13px; color:#334155;\">${safeNum(b.post_count)}</td>\n  <td style=\"padding:14px 15px; text-align:center; font-size:13px; color:#334155; font-weight:600;\">${safeNum(b.total_views).toLocaleString()}</td>\n  <td style=\"padding:14px 15px; text-align:center; font-weight:bold; color:#4f46e5; font-size:13px;\">${esc(b.engagement_rate)}</td>\n  <td style=\"padding:14px 15px; text-align:center; font-size:13px; color:#475569;\">${safeNum(b.total_likes).toLocaleString()}</td>\n  <td style=\"padding:14px 15px; text-align:center; font-size:13px; color:#475569;\">${safeNum(b.total_comments).toLocaleString()}</td>\n  <td style=\"padding:14px 15px; text-align:center; font-size:13px; color:#475569;\">${safeNum(b.total_shares).toLocaleString()}</td>\n  <td style=\"padding:14px 15px; text-align:center; font-size:13px; color:#475569;\">${safeNum(b.total_saves).toLocaleString()}</td>\n  <td style=\"padding:14px 15px; text-align:center; font-weight:bold; color:#10b981; font-size:13px;\">${safeNum(b.total_engagement).toLocaleString()}</td>\n  <td style=\"padding:14px 15px; text-align:center; font-size:12px; color:#475569;\">${esc(b.dominant_post_type || '-')}</td>\n</tr>`;\n}).join('');\n\nconst inactiveRows = filteredInactiveBrands.length > 0\n  ? filteredInactiveBrands.map(b => `\n<tr style=\"border-bottom:1px solid #e2e8f0;\">\n  <td style=\"padding:11px 15px; font-size:12px; color:#334155; font-weight:600;\">${esc(b.brand_name)}</td>\n  <td style=\"padding:11px 15px; font-size:12px; color:#64748b; font-style:italic;\">${esc(b.reason || 'No activity logged')}</td>\n</tr>`).join('')\n  : `<tr><td colspan=\"2\" style=\"padding:14px 15px; color:#94a3b8; font-size:12px; text-align:center;\">All tracked brands posted this week.</td></tr>`;\n\nconst reportTime = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Yangon' });\nconst obsHTML = observations.length > 0\n  ? observations.map((o, i) => `\n    <div style=\"display: table; width: 100%; padding: 14px 0; border-bottom: 1px solid #e2e8f0;\">\n      <div style=\"display: table-cell; width: 32px; vertical-align: top;\">\n        <div style=\"background: #4f46e5; color: #fff; border-radius: 50%; width: 24px; height: 24px; line-height: 24px; text-align: center; font-size: 11px; font-weight: bold;\">${i + 1}</div>\n      </div>\n      <div style=\"display: table-cell; vertical-align: top; padding-left: 8px; font-size: 13px; color: #334155; line-height: 1.7;\">${o}</div>\n    </div>`).join('')\n  : `<div style=\"font-size: 13px; color: #94a3b8; padding: 12px 0;\">No observations for this week.</div>`;\n\nconst postTypeRows = postTypeSummary.length > 0 ? postTypeSummary.map((t, i) => `\n<tr style=\"background:${i % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom:1px solid #e2e8f0;\">\n  <td style=\"padding:12px 12px; font-size:12px; font-weight:700; color:#0f172a;\">${esc(t.post_type)}</td>\n  <td style=\"padding:12px 12px; text-align:center; font-size:12px; color:#334155;\">${safeNum(t.posts)}</td>\n  <td style=\"padding:12px 12px; text-align:center; font-size:12px; color:#334155;\">${safeNum(t.views).toLocaleString()}</td>\n  <td style=\"padding:12px 12px; text-align:center; font-size:12px; color:#334155;\">${safeNum(t.saves).toLocaleString()}</td>\n  <td style=\"padding:12px 12px; text-align:center; font-weight:bold; color:#10b981; font-size:12px;\">${safeNum(t.engagement).toLocaleString()}</td>\n</tr>`).join('') : `<tr><td colspan=\"5\" style=\"padding:14px; color:#94a3b8; text-align:center;\">No type data.</td></tr>`;\n\nconst postRows = posts\n  .filter(p => safeNum(p.views) > 0 || safeNum(p.engagement) > 0)\n  .sort((a, b) => safeNum(b.views) - safeNum(a.views))\n  .map((p, i) => `\n<tr style=\"background:${i % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom:1px solid #e2e8f0;\">\n  <td style=\"padding:12px 12px; font-size:12px; font-weight:700; color:#0f172a;\">${esc(p.brand_name)}</td>\n  <td style=\"padding:12px 12px; font-size:11px; color:#64748b; white-space:nowrap;\">${esc(formatMMDate(p.postedAt))}</td>\n  <td style=\"padding:12px 12px; font-size:11px; color:#4f46e5; font-weight:700; white-space:nowrap;\">${esc(p.post_type || '-')}</td>\n  <td style=\"padding:12px 12px; font-size:12px; color:#334155; max-width:320px; line-height:1.5;\">${esc(p.content || '-')}</td>\n  <td style=\"padding:12px 12px; text-align:center; font-weight:bold; color:#4f46e5; font-size:13px;\">${safeNum(p.views).toLocaleString()}</td>\n  <td style=\"padding:12px 12px; text-align:center; font-size:12px; color:#475569;\">${safeNum(p.likes).toLocaleString()}</td>\n  <td style=\"padding:12px 12px; text-align:center; font-size:12px; color:#475569;\">${safeNum(p.comments).toLocaleString()}</td>\n  <td style=\"padding:12px 12px; text-align:center; font-size:12px; color:#475569;\">${safeNum(p.shares).toLocaleString()}</td>\n  <td style=\"padding:12px 12px; text-align:center; font-size:12px; color:#475569;\">${safeNum(p.saves).toLocaleString()}</td>\n  <td style=\"padding:12px 12px; text-align:center; font-weight:bold; color:#10b981; font-size:13px;\">${safeNum(p.engagement).toLocaleString()}</td>\n  <td style=\"padding:12px 12px; text-align:center;\">\n    ${p.link ? `<a href=\"${esc(p.link)}\" target=\"_blank\" style=\"display:inline-block; background:#eff6ff; color:#2563eb; font-weight:bold; font-size:11px; text-decoration:none; padding:5px 10px; border-radius:15px; border:1px solid #bfdbfe;\">Watch</a>` : '<span style=\"color:#cbd5e1;\">-</span>'}\n  </td>\n</tr>`).join('');\n\nconst reviewRows = reviewRecords.slice(0, 10).map(r => `\n<tr style=\"border-bottom:1px solid #e2e8f0;\">\n  <td style=\"padding:10px 12px; font-size:12px; color:#334155; font-weight:600;\">${esc(r.brand_name)}</td>\n  <td style=\"padding:10px 12px; font-size:12px; color:#64748b;\">${esc(r.reason)}</td>\n  <td style=\"padding:10px 12px; font-size:12px; color:#64748b;\">${esc(r.profile || '-')}</td>\n</tr>`).join('');\n\nconst reportDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Yangon' });\n\nconst html = `\n<!DOCTYPE html>\n<html>\n<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>\n<body style=\"margin:0; padding:24px; background:#f8fafc; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\">\n<div style=\"max-width:1180px; margin:auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;\">\n\n  <div style=\"background:#f1f5f9; padding:40px 40px; text-align:center; border-bottom:1px solid #e2e8f0;\">\n    <div style=\"font-size:11px; letter-spacing:2.5px; color:#4f46e5; font-weight:800; margin-bottom:8px;\">GPS TRACKER MARKET · MYANMAR TIKTOK</div>\n    <h1 style=\"margin:0; font-size:28px; letter-spacing:0.5px; font-weight:800; color:#0f172a;\">📡 Social Radar</h1>\n    <p style=\"margin:8px 0 0 0; color:#475569; font-size:13px; font-weight:500;\">Weekly Strategic Intelligence Report • ${reportDate}</p>\n    <div style=\"margin-top:24px; display:inline-flex; gap:32px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 28px; box-shadow:0 1px 3px rgba(0,0,0,0.02);\">\n      <div style=\"text-align:center;\"><div style=\"font-size:24px; font-weight:800; color:#4f46e5;\">${posts.length}</div><div style=\"font-size:10px; color:#64748b; font-weight:700; margin-top:3px;\">TOTAL POSTS</div></div>\n      <div style=\"width:1px; background:#e2e8f0;\"></div>\n      <div style=\"text-align:center;\"><div style=\"font-size:24px; font-weight:800; color:#06b6d4;\">${activeBrands.length}</div><div style=\"font-size:10px; color:#64748b; font-weight:700; margin-top:3px;\">ACTIVE BRANDS</div></div>\n      <div style=\"width:1px; background:#e2e8f0;\"></div>\n      <div style=\"text-align:center;\"><div style=\"font-size:24px; font-weight:800; color:#64748b;\">${filteredInactiveBrands.length}</div><div style=\"font-size:10px; color:#64748b; font-weight:700; margin-top:3px;\">INACTIVE</div></div>\n      <div style=\"width:1px; background:#e2e8f0;\"></div>\n      <div style=\"text-align:center;\"><div style=\"font-size:24px; font-weight:800; color:#f59e0b;\">${reviewRecords.length}</div><div style=\"font-size:10px; color:#64748b; font-weight:700; margin-top:3px;\">REVIEW</div></div>\n    </div>\n  </div>\n\n  <div style=\"padding:32px 32px; border-bottom:1px solid #f1f5f9;\">\n    <h2 style=\"margin:0 0 18px 0; font-size:16px; font-weight:800; border-left:4px solid #06b6d4; padding-left:12px; color:#0f172a;\">📊 Top Active Brand Performance</h2>\n    <div style=\"overflow-x:auto;\">\n      <table width=\"100%\" style=\"border-collapse:collapse; font-size:13px; min-width:940px;\">\n        <thead><tr style=\"background:#f8fafc; color:#475569; text-align:center; border-bottom:2px solid #e2e8f0;\">\n          <th style=\"padding:14px 15px; text-align:center; font-weight:700;\">Rank</th>\n          <th style=\"padding:14px 15px; text-align:left; font-weight:700;\">Brand</th>\n          <th style=\"padding:14px 15px; font-weight:700;\">Posts</th>\n          <th style=\"padding:14px 15px; font-weight:700;\">Views</th>\n          <th style=\"padding:14px 15px; font-weight:700;\">Eng. Rate</th>\n          <th style=\"padding:14px 15px; font-weight:700;\">Likes</th>\n          <th style=\"padding:14px 15px; font-weight:700;\">Comments</th>\n          <th style=\"padding:14px 15px; font-weight:700;\">Shares</th>\n          <th style=\"padding:14px 15px; font-weight:700;\">Saves</th>\n          <th style=\"padding:14px 15px; font-weight:700;\">Total Eng.</th>\n          <th style=\"padding:14px 15px; font-weight:700;\">Main Type</th>\n        </tr></thead>\n        <tbody>${activeRows}</tbody>\n      </table>\n    </div>\n    <div style=\"margin-top:14px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:11px; color:#64748b; line-height:1.4;\">\n      <strong>Glossary:</strong> <span style=\"margin-right:15px;\">• <strong>Eng. Rate:</strong> Total engagement divided by total views.</span><span>• <strong>Total Eng.:</strong> Likes + Comments + Shares + Saves.</span>\n    </div>\n  </div>\n\n  <div style=\"padding:28px 32px; border-bottom:1px solid #f1f5f9;\">\n    <h2 style=\"margin:0 0 18px 0; font-size:16px; font-weight:800; border-left:4px solid #f59e0b; padding-left:12px; color:#0f172a;\">🎬 Content Type Distribution</h2>\n    <div style=\"overflow-x:auto;\"><table width=\"100%\" style=\"border-collapse:collapse; font-size:12px; min-width:520px;\">\n      <thead><tr style=\"background:#f8fafc; border-bottom:2px solid #e2e8f0;\"><th style=\"padding:12px; text-align:left; color:#475569;\">Type</th><th style=\"padding:12px; text-align:center; color:#475569;\">Posts</th><th style=\"padding:12px; text-align:center; color:#475569;\">Views</th><th style=\"padding:12px; text-align:center; color:#475569;\">Saves</th><th style=\"padding:12px; text-align:center; color:#475569;\">Engagement</th></tr></thead>\n      <tbody>${postTypeRows}</tbody>\n    </table></div>\n  </div>\n\n  <div style=\"padding:32px 32px; border-bottom:1px solid #f1f5f9; background:#fafafa;\">\n    <h2 style=\"margin:0 0 14px 0; font-size:15px; font-weight:700; border-left:4px solid #cbd5e1; padding-left:12px; color:#475569;\">😶 No Activity Detected</h2>\n    <table width=\"50%\" style=\"border-collapse:collapse; font-size:12px; min-width:320px; background:#ffffff; border:1px solid #e2e8f0;\"><thead><tr style=\"background:#f1f5f9; border-bottom:1px solid #e2e8f0;\"><th style=\"padding:10px 15px; text-align:left; color:#475569; font-weight:700;\">Brand</th><th style=\"padding:10px 15px; text-align:left; color:#475569; font-weight:700;\">Status</th></tr></thead><tbody>${inactiveRows}</tbody></table>\n  </div>\n\n  <div style=\"padding:28px 32px; background:#f5f3ff; border-bottom:1px solid #e0e7ff;\">\n    <div style=\"display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;\">\n      <h2 style=\"margin:0; font-size:16px; font-weight:800; border-left:4px solid #4f46e5; padding-left:12px; color:#0f172a;\">📋 Weekly Observations</h2>\n      <span style=\"font-size:11px; color:#4f46e5; font-weight:700; margin-left:auto; background:#e0e7ff; padding:4px 10px; border-radius:6px;\">As of ${reportTime} MMT</span>\n    </div>${obsHTML}\n  </div>\n\n  <div style=\"padding:32px 32px;\">\n    <h2 style=\"margin:0 0 18px 0; font-size:16px; font-weight:800; border-left:4px solid #6366f1; padding-left:12px; color:#0f172a;\">🔍 Detailed Content Analysis (All Brands by Views)</h2>\n    <div style=\"overflow-x:auto;\"><table width=\"100%\" style=\"border-collapse:collapse; font-size:12px; min-width:1040px;\"><thead><tr style=\"background:#f8fafc; border-bottom:2px solid #e2e8f0;\">\n      <th style=\"padding:12px; text-align:left; color:#475569; font-weight:700;\">Brand</th><th style=\"padding:12px; text-align:left; color:#475569; font-weight:700;\">Posted (MMT)</th><th style=\"padding:12px; text-align:left; color:#475569; font-weight:700;\">Type</th><th style=\"padding:12px; text-align:left; color:#475569; font-weight:700;\">Content</th><th style=\"padding:12px; text-align:center; color:#475569; font-weight:700;\">Views</th><th style=\"padding:12px; text-align:center; color:#475569; font-weight:700;\">Likes</th><th style=\"padding:12px; text-align:center; color:#475569; font-weight:700;\">Cmts</th><th style=\"padding:12px; text-align:center; color:#475569; font-weight:700;\">Shares</th><th style=\"padding:12px; text-align:center; color:#475569; font-weight:700;\">Saves</th><th style=\"padding:12px; text-align:center; color:#475569; font-weight:700;\">Eng.</th><th style=\"padding:12px; text-align:center; color:#475569; font-weight:700;\">Link</th></tr></thead><tbody>${postRows}</tbody></table></div>\n    <div style=\"margin-top:14px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:11px; color:#64748b; line-height:1.4;\"><strong>Formula:</strong> Total Engagement = Likes + Comments + Shares + Saves.</div>\n  </div>\n\n  ${reviewRecords.length > 0 ? `<div style=\"padding:24px 32px; background:#fffbeb; border-top:1px solid #fde68a;\"><h2 style=\"margin:0 0 14px 0; font-size:15px; font-weight:800; border-left:4px solid #f59e0b; padding-left:12px; color:#92400e;\">⚠️ Review Records</h2><p style=\"font-size:12px; color:#92400e; margin:0 0 12px 0;\">These are non-post/profile-level records returned by the scraper. They are not counted as posts, but are kept for checking.</p><table width=\"100%\" style=\"border-collapse:collapse; font-size:12px; background:#ffffff; border:1px solid #fde68a;\"><thead><tr style=\"background:#fffbeb;\"><th style=\"padding:10px; text-align:left;\">Brand</th><th style=\"padding:10px; text-align:left;\">Reason</th><th style=\"padding:10px; text-align:left;\">Profile</th></tr></thead><tbody>${reviewRows}</tbody></table></div>` : ''}\n\n  <div style=\"background:#f8fafc; border-top:1px solid #e2e8f0; padding:24px 32px; text-align:center; color:#94a3b8; font-size:11px; font-weight:500;\"><span style=\"color:#64748b; font-weight:700;\">GPS Tiktok Social Radar</span> ${reportDate}</div>\n</div></body></html>`;\n\nreturn [{ json: { subject: `📊 GPS Social Radar: TikTok Intelligence Report · ${reportDate}`, emailBody: html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3424,
+        1552
+      ],
+      "id": "1fbc3586-a7fb-4791-8e19-2429ad9f8db2",
+      "name": "Do Report Template v3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===================================================\n// WEEKLY OBSERVATIONS GENERATOR v3\n// Uses TikTok engagement formula: Likes + Comments + Shares + Saves\n// ===================================================\n\nconst input = $input.first().json;\nconst posts = input.posts || [];\nconst summary = input.summary || [];\nconst inactive_brands = input.inactive_brands || [];\nconst post_type_summary = input.post_type_summary || [];\n\nfunction safeNum(n) { return Number(n) || 0; }\n\nconst ranked = [...summary].sort((a,b) => safeNum(b.total_engagement) - safeNum(a.total_engagement));\nconst top = ranked[0];\nconst bestPost = [...posts].sort((a,b) => safeNum(b.engagement) - safeNum(a.engagement))[0];\nconst mostShared = [...posts].sort((a,b) => safeNum(b.shares) - safeNum(a.shares))[0];\nconst mostSaved = [...posts].sort((a,b) => safeNum(b.saves) - safeNum(a.saves))[0];\nconst mostCommented = [...posts].sort((a,b) => safeNum(b.comments) - safeNum(a.comments))[0];\n\nconst timeCounts = {};\nposts.forEach(p => { timeCounts[p.timeBucket] = (timeCounts[p.timeBucket] || 0) + 1; });\nconst peakTime = Object.entries(timeCounts).sort((a,b) => b[1]-a[1])[0];\n\nconst weekendPosts = posts.filter(p => p.dayType === 'Weekend').length;\nconst weekdayPosts = posts.filter(p => p.dayType === 'Weekday').length;\n\nconst themeCounts = {};\nposts.forEach(p => { themeCounts[p.theme] = (themeCounts[p.theme] || 0) + 1; });\nconst topTheme = Object.entries(themeCounts).sort((a,b) => b[1]-a[1])[0];\n\nconst dayCounts = {};\nposts.forEach(p => {\n  if (!p.timestamp) return;\n  const dayLabel = new Date(p.timestamp + 390*60*1000)\n    .toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', day: '2-digit', month: 'short' });\n  dayCounts[dayLabel] = (dayCounts[dayLabel] || 0) + 1;\n});\nconst busiestDay = Object.entries(dayCounts).sort((a,b) => b[1]-a[1])[0];\n\nconst topPostType = post_type_summary[0];\n\nconst observations = [\n  top ? `<strong>${top.brand_name}</strong> led this week with ${safeNum(top.total_engagement).toLocaleString()} total engagement across ${safeNum(top.post_count)} post(s). Engagement formula: Likes + Comments + Shares + Saves.` : null,\n\n  bestPost ? `Best single post came from <strong>${bestPost.brand_name}</strong> (${safeNum(bestPost.views).toLocaleString()} views, ${safeNum(bestPost.engagement).toLocaleString()} engagement) — type: ${bestPost.post_type}, theme: ${bestPost.theme}.` : null,\n\n  topPostType ? `Most effective content type this week: <strong>${topPostType.post_type}</strong> (${safeNum(topPostType.posts)} post(s), ${safeNum(topPostType.engagement).toLocaleString()} engagement).` : null,\n\n  mostShared && safeNum(mostShared.shares) > 0 ? `<strong>${mostShared.brand_name}</strong> had the most shares (${safeNum(mostShared.shares)}), showing forwarding/viral potential.` : null,\n\n  mostSaved && safeNum(mostSaved.saves) > 0 ? `<strong>${mostSaved.brand_name}</strong> had the most saves (${safeNum(mostSaved.saves)}), showing content people may want to revisit later.` : null,\n\n  mostCommented && safeNum(mostCommented.comments) > 0 ? `<strong>${mostCommented.brand_name}</strong> generated the most comments (${safeNum(mostCommented.comments)}), the strongest conversation signal.` : null,\n\n  peakTime ? `Most active posting time: <strong>${peakTime[0]}</strong> (${peakTime[1]} post${peakTime[1] > 1 ? 's' : ''}). ${weekendPosts} weekend posts vs ${weekdayPosts} weekday posts this week.` : null,\n\n  topTheme ? `Most common content theme across all brands: <strong>${topTheme[0]}</strong> (${topTheme[1]} post${topTheme[1] > 1 ? 's' : ''}).` : null,\n\n  busiestDay ? `Heaviest posting day: <strong>${busiestDay[0]}</strong> (${busiestDay[1]} posts).` : null,\n\n  inactive_brands.length > 0 ? `${inactive_brands.length} brand(s) returned no active posts/data this week: ${inactive_brands.map(b => `${b.brand_name} (${b.reason})`).join(', ')}.` : null\n].filter(Boolean);\n\nreturn [{ json: { ...input, observations } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        1552
+      ],
+      "id": "faff13d9-5b57-4d1c-a476-8adff86a976e",
+      "name": "Generate Observations v3"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XsaFonQafrsIk0_PpBD1vQnIiji-VNExIh9kc9iLWnI",
+          "mode": "list",
+          "cachedResultName": "2026MyanmarISPList",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XsaFonQafrsIk0_PpBD1vQnIiji-VNExIh9kc9iLWnI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1577970600,
+          "mode": "list",
+          "cachedResultName": "GPS Tiktok URL",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XsaFonQafrsIk0_PpBD1vQnIiji-VNExIh9kc9iLWnI/edit#gid=1577970600"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2032,
+        1712
+      ],
+      "id": "defeddac-f633-47df-bc28-1fbed33fa7ca",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "loJJdVr2wQJ7qzU1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 9,
+              "triggerAtMinute": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1728,
+        1712
+      ],
+      "id": "37b1b8d5-1c23-4f09-a536-f937d5a03210",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "sendTo": "=marketing@agbcommunication.com,\nsithuaung@agbcommunication.com,\nsumonkyaw@agbcommunication.com,\nhazel.sumyat@agbcommunication.com,\nyeyint@agbcommunication.com,\nphyonyinyithet@agbcommunication.com,\neaintthawtarlin@agbcommunication.com,\nwintnadiaung@agbcommunication.com,\nsawblessingtun@agbcommunication.com,\nkokozin@agbcommunication.com,\nnanshweyin@agbcommunication.com,\nchawthaengone@agbcommunication.com,\nsithuhtet@agbcommunication.com,\nsunlwinhtun@agbcommunication.com,\nhsumyatoo@agbcommunication.com,\nkhinsumyatkyaw@agbcommunication.com,\nthirizhon@agbcommunication.com,\nzanyelin@agbcommunication.com, \nyehtetaung2@agbcommunication.com,\nhtutaungkyaw@agbcommunication.com,\nsumyatthwe@agbcommunication.com,\nkhinchawsuwin@agbcommunication.com,\nkyiphyuhan@agbcommunication.com,\nzaylatt@agbcommunication.com,\nayethandarkyaw@agbcommunication.com,\nhtethtethlaing@agbcommunication.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.emailBody }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        3744,
+        1552
+      ],
+      "id": "3e4e6230-7918-48b8-9a30-89d46a65a082",
+      "name": "Send Message to Marketing Team1",
+      "webhookId": "2171849f-5900-41da-958a-a274c4e9970f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AHnor92JnqgLA4fE",
+          "name": "Htet Gmail Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "GdWCkxBtKWOsKjdch",
+          "mode": "list",
+          "cachedResultName": "TikTok Scraper (clockworks/tiktok-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/GdWCkxBtKWOsKjdch/input"
+        },
+        "customBody": "={\n  \"commentsPerPost\": 0,\n  \"excludePinnedPosts\": false,\n  \"maxFollowersPerProfile\": 0,\n  \"maxFollowingPerProfile\": 0,\n  \"maxRepliesPerComment\": 0,\n  \"profileSorting\": \"latest\",\n  \"profiles\": [\n    \"{{ $json['Page Name'] }}\"\n  ],\n  \"proxyCountryCode\": \"None\",\n  \"resultsPerPage\": 100,\n  \"scrapeRelatedVideos\": false,\n  \"shouldDownloadAvatars\": false,\n  \"shouldDownloadCovers\": false,\n  \"shouldDownloadMusicCovers\": false,\n  \"shouldDownloadSlideshowImages\": false,\n  \"shouldDownloadVideos\": false,\n  \"topLevelCommentsPerPost\": 0,\n  \"oldestPostDateUnified\": \"7 days\"\n}"
+      },
+      "id": "69c358fb-0e08-43b8-87dd-44242860b916",
+      "name": "Tiktok Scraper Apify Actor1",
+      "type": "@apify/n8n-nodes-apify.apify",
+      "position": [
+        2608,
+        1824
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "apifyApi": {
+          "id": "UmDGjxOEUncPHQms",
+          "name": "Myat"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2576,
+        1552
+      ],
+      "id": "b2b3ce77-521e-4e60-b918-c5d96da2d119",
+      "name": "Collect All Brand Data1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2256,
+        1712
+      ],
+      "id": "ba01f5f5-ef41-4872-9634-c8060ef19b52",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "resource": "Datasets",
+        "datasetId": "={{ $json.defaultDatasetId }}",
+        "limit": null,
+        "options": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        2864,
+        1824
+      ],
+      "id": "180acdc0-0dd5-405c-b794-a104dcbcb2f5",
+      "name": "Get dataset items1",
+      "credentials": {
+        "apifyApi": {
+          "id": "UmDGjxOEUncPHQms",
+          "name": "Myat"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger (Every Monday 9AM)1": {
+      "main": [
+        [
+          {
+            "node": "Read Competitor List1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Competitor List1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Competitors1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Competitors1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate All Posts1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Facebook Posts Scraper1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Posts Scraper1": {
+      "main": [
+        [
+          {
+            "node": "Get Dataset Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Dataset Items1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Competitors1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate All Posts1": {
+      "main": [
+        [
+          {
+            "node": "NORMALIZE & ENRICH LAYER v9 - All Types Safe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NORMALIZE & ENRICH LAYER v9 - All Types Safe": {
+      "main": [
+        [
+          {
+            "node": "EMAIL BUILDER - All Types Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EMAIL BUILDER - All Types Report": {
+      "main": [
+        [
+          {
+            "node": "Send Report to Marketing Team1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Brand Data v3 - All Types": {
+      "main": [
+        [
+          {
+            "node": "Generate Observations v3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Do Report Template v3": {
+      "main": [
+        [
+          {
+            "node": "Send Message to Marketing Team1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Observations v3": {
+      "main": [
+        [
+          {
+            "node": "Do Report Template v3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiktok Scraper Apify Actor1": {
+      "main": [
+        [
+          {
+            "node": "Get dataset items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect All Brand Data1": {
+      "main": [
+        [
+          {
+            "node": "Normalize Brand Data v3 - All Types",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Collect All Brand Data1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tiktok Scraper Apify Actor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get dataset items1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Yangon",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger (Every Monday 9AM)": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger (Every Monday 9AM)1": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger1": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "87d9d5f0-1ebd-4e27-9f27-e370e1499a3a",
+  "activeVersionId": null,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-06-04T04:15:32.070Z",
+      "createdAt": "2026-06-04T04:15:32.070Z",
+      "role": "workflow:owner",
+      "workflowId": "YECpoGsGhv1lQ03f",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
