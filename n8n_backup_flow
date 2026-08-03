@@ -1,0 +1,1351 @@
+{
+  "updatedAt": "2026-06-03T04:21:47.738Z",
+  "createdAt": "2026-06-03T03:57:35.479Z",
+  "id": "DlLcaxJyua5Bx01T",
+  "name": "Vector Database Central Hub (DGT Team)",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "chunkSize": 4000,
+        "chunkOverlap": 1000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        336,
+        448
+      ],
+      "id": "48fa8abb-22ac-4be8-908f-ce4c4caa5347",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "AGB Cloud Iaas Update ",
+                "value": "data"
+              }
+            ]
+          }
+        }
+      },
+      "id": "6d85d47b-be73-418b-98f0-8177a60481b5",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        304,
+        288
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1j-aTG6pYBN5m3CUnJLiux0lvvws-oXGy",
+          "mode": "list",
+          "cachedResultName": "Cloud Iaas Team  (AGB)",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1j-aTG6pYBN5m3CUnJLiux0lvvws-oXGy"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "id": "6ff478b5-672d-4725-a70d-11e953c005b4",
+      "name": "Google Drive File Created",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        -224,
+        -16
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1j-aTG6pYBN5m3CUnJLiux0lvvws-oXGy",
+          "mode": "list",
+          "cachedResultName": "Cloud Iaas Team  (AGB)",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1j-aTG6pYBN5m3CUnJLiux0lvvws-oXGy"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "d227a3f6-509a-417f-b493-a4670d91432a",
+      "name": "Google Drive File Updated",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        -224,
+        176
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "id": "cf0c089d-bb88-4963-b0e2-462870aeb78c",
+      "name": "Download File From Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        32,
+        96
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        176,
+        288
+      ],
+      "id": "7ed1e5e9-89bf-4287-968a-b85282f76c16",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Cloud Vector Database\n### Use it when you need to update the data for Cloud Chat Bot\n### All data related by IOT Team",
+        "height": 272,
+        "width": 608
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -576,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "a324f9d7-9371-47d6-847a-e3080f167a82",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "chunkSize": 4000,
+        "chunkOverlap": 1000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        448
+      ],
+      "id": "9642877a-4ec0-4d36-9e71-3596ef84599d",
+      "name": "Recursive Character Text Splitter1"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Available Township",
+                "value": "data"
+              }
+            ]
+          }
+        }
+      },
+      "id": "7b45a6d0-d311-4e9f-b5f5-31825ad1bad7",
+      "name": "Default Data Loader1",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        1376,
+        224
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1TQgcTz1BM-LPicQiuFxmNhqqPC5CVG57",
+          "mode": "list",
+          "cachedResultName": "AGB Document (01_04_2026)",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1TQgcTz1BM-LPicQiuFxmNhqqPC5CVG57"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "id": "22e9a5fc-173f-44ed-a4be-576aeead4e2d",
+      "name": "Google Drive File Created1",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        928,
+        -32
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1TQgcTz1BM-LPicQiuFxmNhqqPC5CVG57",
+          "mode": "list",
+          "cachedResultName": "AGB Document (01_04_2026)",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1TQgcTz1BM-LPicQiuFxmNhqqPC5CVG57"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "cc8829ce-8df3-44c4-870a-97e353a4a000",
+      "name": "Google Drive File Updated1",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        928,
+        192
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "id": "885cce2b-f588-44ff-bf6c-68c0b29c4aea",
+      "name": "Download File From Google Drive1",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1136,
+        48
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        224
+      ],
+      "id": "b22d9128-edda-4e33-85f7-a1d86ae4e740",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# AGB Website Chatbot Database\n## Use it when you need to update the AGB Website Information \n",
+        "height": 256,
+        "width": 576,
+        "color": "#266BAB"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        576,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "4f9f4627-5b97-410a-81bb-afb9e762d75a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "chunkSize": 4000,
+        "chunkOverlap": 1000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        48,
+        1168
+      ],
+      "id": "8806f1f2-78fb-45a5-b7e0-88c11acf1a99",
+      "name": "Recursive Character Text Splitter2"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "NovalinkFacts",
+                "value": "data"
+              }
+            ]
+          }
+        }
+      },
+      "id": "904db1a4-941f-4099-861a-d697b7a779e5",
+      "name": "Default Data Loader2",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        112,
+        1008
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1XGRVNY771Y4kMnaB8zSyZV1o-kLBkVt0",
+          "mode": "list",
+          "cachedResultName": "Markdown Format ",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1XGRVNY771Y4kMnaB8zSyZV1o-kLBkVt0"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "id": "ad24e387-c997-4054-80c8-e7d1bc51ceaf",
+      "name": "Google Drive File Created2",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        -512,
+        720
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1XGRVNY771Y4kMnaB8zSyZV1o-kLBkVt0",
+          "mode": "list",
+          "cachedResultName": "Markdown Format ",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1XGRVNY771Y4kMnaB8zSyZV1o-kLBkVt0"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "7a2d918d-6c8a-4b3e-8127-ba38398ad86e",
+      "name": "Google Drive File Updated2",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        -528,
+        944
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "id": "6bac614c-2b65-4a18-8f5e-2d6a95d3def2",
+      "name": "Download File From Google Drive2",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -288,
+        800
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -96,
+        992
+      ],
+      "id": "c5776a70-4b7b-4191-8748-b87cc43b48f6",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "CloudIaasUpdatebyKSR07_05_2026",
+          "mode": "list",
+          "cachedResultName": "CloudIaasUpdatebyKSR07_05_2026"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        96
+      ],
+      "id": "aea567c9-b8b2-48f0-9484-f7ad6c88684a",
+      "name": "Cloud DB",
+      "credentials": {
+        "qdrantApi": {
+          "id": "hEc6l5mpEdHJqCHP",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "AGBData01_04_2026",
+          "mode": "list",
+          "cachedResultName": "AGBData01_04_2026"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        48
+      ],
+      "id": "3dfe1320-55af-42b9-9567-d7884b0125e3",
+      "name": "AGB Info DB",
+      "credentials": {
+        "qdrantApi": {
+          "id": "hEc6l5mpEdHJqCHP",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "NOVA1536",
+          "mode": "list",
+          "cachedResultName": "NOVA1536"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        800
+      ],
+      "id": "cdcf9d00-271a-4f27-b7df-c88d2304c2c3",
+      "name": "Novalink DB",
+      "credentials": {
+        "qdrantApi": {
+          "id": "hEc6l5mpEdHJqCHP",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Novalink Website Chatbot Database\n## Use it when you need to update the Novalink Website Information \n## All data related by Marketing Team \n",
+        "height": 320,
+        "width": 704,
+        "color": "#20DF8C"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -656,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "9b35f689-a8a7-4d88-84f9-931fcc0aa772",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "separator": "Separator"
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        1232
+      ],
+      "id": "45875740-a57b-418b-82ab-da9e53fa7077",
+      "name": "Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "NovalinkFacts",
+                "value": "data"
+              }
+            ]
+          }
+        }
+      },
+      "id": "cb617759-4a7c-497a-8770-a789bc21c441",
+      "name": "Default Data Loader3",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        1488,
+        1056
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "10wbXpU8z7UV_NGW8OHmdOfJ2d4WR567m",
+          "mode": "list",
+          "cachedResultName": "SOP OpenAI",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/10wbXpU8z7UV_NGW8OHmdOfJ2d4WR567m"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "id": "620d7866-5260-4c43-8d80-309675ee6f6c",
+      "name": "Google Drive File Created3",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        944,
+        752
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "10wbXpU8z7UV_NGW8OHmdOfJ2d4WR567m",
+          "mode": "list",
+          "cachedResultName": "SOP OpenAI",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/10wbXpU8z7UV_NGW8OHmdOfJ2d4WR567m"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "8452872c-ac85-4fe9-bb82-c7f0fa461152",
+      "name": "Google Drive File Updated3",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        944,
+        1024
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "id": "c67afb51-2961-4c2e-9224-d73b135309ee",
+      "name": "Download File From Google Drive3",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1216,
+        848
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1328,
+        1072
+      ],
+      "id": "b9605a31-ec3d-40c1-b92d-d54a973bdd4b",
+      "name": "Embeddings OpenAI3",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# SOP Chatbot Database with Open WebUI\n## Use it when you need to update the  SOP Information \n## All data related by Digital transformatin Team\n",
+        "height": 320,
+        "width": 704,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        512,
+        544
+      ],
+      "typeVersion": 1,
+      "id": "6ffa6fbc-72cc-4d70-a62f-c01f9e74be64",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "AGBSOP",
+          "mode": "list",
+          "cachedResultName": "AGBSOP"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.1,
+      "position": [
+        1472,
+        848
+      ],
+      "id": "410e4954-e3a2-42bb-9c1e-47c303d89ba5",
+      "name": "SOP DB",
+      "credentials": {
+        "qdrantApi": {
+          "id": "hEc6l5mpEdHJqCHP",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "AGBHR",
+          "mode": "list",
+          "cachedResultName": "AGBHR"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        1664
+      ],
+      "id": "6d2cd5be-fb7f-4d8b-b889-81672f41c9f9",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "hEc6l5mpEdHJqCHP",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 4000,
+        "chunkOverlap": 1000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        64,
+        2080
+      ],
+      "id": "9000531e-ec04-4aa9-b251-28ed249cf040",
+      "name": "Recursive Character Text Splitter3"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "NovalinkFacts",
+                "value": "data"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c386318e-d282-441c-8631-451737d756d9",
+      "name": "Default Data Loader4",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        128,
+        1856
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "12utSzUI9UDfftTbarGhX4-iGPkQq1RfY",
+          "mode": "list",
+          "cachedResultName": "AGB_Emphandbook_HRPolicy",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/12utSzUI9UDfftTbarGhX4-iGPkQq1RfY"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "id": "dbfebcd9-cce8-475e-ab9d-e517d5bb0236",
+      "name": "Google Drive File Created4",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        -464,
+        1552
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "12utSzUI9UDfftTbarGhX4-iGPkQq1RfY",
+          "mode": "list",
+          "cachedResultName": "AGB_Emphandbook_HRPolicy",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/12utSzUI9UDfftTbarGhX4-iGPkQq1RfY"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "62f9b576-8c96-49da-82f3-2513e1348456",
+      "name": "Google Drive File Updated4",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        -448,
+        1792
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "id": "1b53b82e-0c27-49a5-a012-711f95769274",
+      "name": "Download File From Google Drive4",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -192,
+        1664
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zVK6LNdGtHCALsno",
+          "name": "Htet Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        1856
+      ],
+      "id": "a1027691-25e3-451b-990a-85ecc4a817c3",
+      "name": "Embeddings OpenAI4",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# HR Chatbot Database with Open WebUI\n## Use it when you need to update the  HR Information \n## All data related by Human Resource Department\n",
+        "height": 320,
+        "width": 704,
+        "color": "#D69061"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -688,
+        1408
+      ],
+      "typeVersion": 1,
+      "id": "a44d0a24-8d7c-4245-8580-66f4b30b3c80",
+      "name": "Sticky Note4"
+    }
+  ],
+  "connections": {
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Cloud DB",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Created": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Updated": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File From Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Cloud DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Cloud DB",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "AGB Info DB",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Created1": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Updated1": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File From Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "AGB Info DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "AGB Info DB",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter2": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader2",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader2": {
+      "ai_document": [
+        [
+          {
+            "node": "Novalink DB",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Created2": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Updated2": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File From Google Drive2": {
+      "main": [
+        [
+          {
+            "node": "Novalink DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Novalink DB",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader3",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader3": {
+      "ai_document": [
+        [
+          {
+            "node": "SOP DB",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Created3": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Updated3": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File From Google Drive3": {
+      "main": [
+        [
+          {
+            "node": "SOP DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "SOP DB",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter3": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader4",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader4": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Created4": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Updated4": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File From Google Drive4": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI4": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "8479981e-9b54-4816-99dd-a44b6f195aa9",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-06-03T03:57:35.479Z",
+      "createdAt": "2026-06-03T03:57:35.479Z",
+      "role": "workflow:owner",
+      "workflowId": "DlLcaxJyua5Bx01T",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
