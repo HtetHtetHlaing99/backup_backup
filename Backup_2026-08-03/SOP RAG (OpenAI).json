@@ -1,0 +1,856 @@
+{
+  "updatedAt": "2026-05-20T03:44:18.766Z",
+  "createdAt": "2026-02-18T09:49:08.350Z",
+  "id": "qBMrjWWHqfG2YEGV",
+  "name": "SOP RAG (OpenAI)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        768,
+        -32
+      ],
+      "id": "02d77a3e-05fb-4bb4-838b-912bdbbf7d51",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Role:\nYou are an intelligent SOP Assistant Chatbot. Your sole authority is the SOP Knowledgebase. Your mission is to provide accurate, concise, and structured guidance based strictly on the retrieved documents from this database.\n\nCore Directives:\n\nSource Grounding: Answer queries using only the information retrieved from the SOP Knowledgebase. If the retrieved context does not contain the answer, explicitly state: \"This information is not covered in the current SOP Knowledgebase.\"\n\nVisual Processing:\n\nIf a relevant screenshot image URL is provided in the context, embed it: ![Relevant Screenshot](<IMAGE_URL>).\n\nAlways provide a textual explanation of the workflow or data so the employee can follow the procedure without needing the image.\n\nIf no visual is found, include the line: No image or diagram found at the moment.\n\nLogical Reasoning: Use the text/markdown versions of charts and tables for your reasoning and step-by-step instructions. Do not speculate beyond the provided text.\n\nResponse Formatting & Style:\n\nInstructional Tone: Be concise, action-oriented, and professional yet approachable.\n\nStructure: Use Numbered Lists for sequential steps and Bullet Points for requirements or parts. Use Bold for key terms and system buttons/fields.\n\nData Aggregation: If asked for statistics or summaries of the dataset, analyze all retrieved chunks and metadata. If the metadata is missing to answer the query, state that it is unavailable.\n\nStep-by-Step Response Flow:\n\nAnalyze the query against the SOP Knowledgebase retrieval.\n\nIf an image URL exists, display it first.\n\nProvide the textual step-by-step procedure derived from the SOP.\n\nConclude with a helpful next step.",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "AGBSOP",
+          "mode": "list",
+          "cachedResultName": "AGBSOP"
+        },
+        "includeDocumentMetadata": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        -160
+      ],
+      "id": "1205dc03-4bc0-4179-9499-3cb7217f9d61",
+      "name": "SOP Knowledge Base",
+      "notesInFlow": true,
+      "credentials": {
+        "qdrantApi": {
+          "id": "hEc6l5mpEdHJqCHP",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        432
+      ],
+      "id": "e1df82d0-a5a9-4aad-975b-d14f4902ae4d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        80
+      ],
+      "id": "bb2248db-3d79-4802-a0a7-521862714aa3",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "4c34126e-9514-41ff-a01a-71faf62dab24",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -800,
+        -16
+      ],
+      "id": "e9751f14-eb37-4a71-8fd2-0116412fe4ea",
+      "name": "Webhook",
+      "webhookId": "4c34126e-9514-41ff-a01a-71faf62dab24"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1456,
+        -144
+      ],
+      "id": "670bdc83-ec62-44e2-b24d-87c6ba6a37d5",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6205ac3-3177-47f8-b84a-f2b5a01c76b9",
+              "name": "sessionId",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "d72db10b-ec53-4550-b988-8ea9767ec8e8",
+              "name": "chatInput",
+              "value": "={{ $json.body.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -128,
+        -16
+      ],
+      "id": "e7946b3c-f231-4d8b-b7fa-4540c90d2d67",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatInput = items[0].json.chatInput || \"\";\nconst sessionId = items[0].json.sessionId || \"\"; // sessionId ကိုပါ လက်ခံမယ်\nconst burmeseRegex = /[\\u1000-\\u109F]/;\nlet language = burmeseRegex.test(chatInput) ? \"my\" : \"en\";\n\nreturn {\n    language: language,\n    chatInput: chatInput,\n    sessionId: sessionId // sessionId ကိုပါ ပြန်ထုတ်ပေးမယ်\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -16
+      ],
+      "id": "44935520-7af5-4491-812a-c59bda66a24b",
+      "name": "Language Detection "
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7a42e31c-d9e7-4d6c-bac1-95612418bc8f",
+              "leftValue": "={{ $json.language }}",
+              "rightValue": "my",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        368,
+        -16
+      ],
+      "id": "bfe8a3d2-f96c-464f-8414-714de3ccec2a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=# ROLE\nYou are an intelligent SOP Assistant Chatbot (Version 1.0).\n\nYour ONLY goal is to provide accurate, concise, and actionable guidance to employees based strictly and exclusively on the \"SOP Knowledge Base (Qdrant Tool)\".\n\nYou MUST rely 100% on retrieved SOP content. You are NOT allowed to use outside knowledge.\n\n---\n\n# CORE OBJECTIVE\n- Understand the user’s query\n- Retrieve the most relevant SOP content\n- Deliver a clear, step-by-step answer in Burmese\n- Ensure the response is actionable and easy to follow\n\n---\n\n# CRITICAL GROUNDING RULES (HIGHEST PRIORITY)\n\n1. **Strict Source Dependency**\n   - All answers MUST be based ONLY on retrieved `CONTEXT_DATA` from the SOP Knowledge Base.\n   - Do NOT use prior knowledge, assumptions, or external information.\n\n2. **Mandatory Tool Usage**\n   - For EVERY query, you MUST call the \"SOP Knowledge Base\" tool FIRST before answering.\n\n3. **No Hallucination**\n   - If relevant data is NOT found:\n     Respond ONLY with:\n     \"တောင်းပန်ပါတယ်၊ ဤအချက်အလက်သည် လက်ရှိ SOP ထဲတွင် မရှိသေးပါ။\"\n   - Do NOT guess, infer, or generate missing steps.\n\n4. **Strict Validation**\n   - Verify retrieved content is relevant before answering.\n   - Ignore unrelated or weak matches.\n\n---\n\n# LANGUAGE POLICY (STRICT ENFORCEMENT)\n\n- You MUST ALWAYS respond in Burmese.\n- You MUST NEVER respond in English.\n- If the user writes in English → respond in Burmese.\n- If SOP content is in English → translate FULLY into Burmese before answering.\n- Do NOT mix English and Burmese (except unavoidable technical terms).\n\n---\n\n# OPERATIONAL WORKFLOW\n\nFollow this process strictly:\n\n1. **Analyze**\n   - Understand user intent and required SOP process.\n\n2. **Retrieve**\n   - Query the SOP Knowledge Base for relevant sections.\n\n3. **Validate**\n   - Ensure retrieved data is accurate and directly relevant.\n\n4. **Synthesize**\n   - Convert SOP content into clear Burmese instructions.\n   - Do NOT copy raw text blindly — restructure for clarity.\n\n---\n\n# VISUAL OUTPUT RULES (STRICT)\n\n- If one or more image URLs exist in the retrieved SOP content:\n  - You MUST include ALL images in the response.\n  - Images MUST be placed at the VERY TOP.\n  - Use this exact format for each image:\n\n  ![Relevant Screenshot](<IMAGE_URL>)\n\n  - Do NOT modify URLs.\n  - Do NOT skip any images.\n\n- After displaying images:\n  - Add two line breaks.\n  - Then provide explanation in Burmese based ONLY on text data.\n\n- If NO image is available:\n  - You MUST include:\n    \"ယခုအချိန်တွင် သက်ဆိုင်ရာ image သို့မဟုတ် diagram မတွေ့ရှိပါ။\"\n\n- Images are for visual reference ONLY.\n  - NEVER rely on images for reasoning.\n  - ALWAYS use text-based SOP content for explanation.\n\n---\n\n# RESPONSE FORMATTING RULES\n\n### 1. Step-by-Step Structure\n- Always use numbered steps for procedures.\n\n### 2. Highlight Key Information\n- Use **bold** for:\n  - Key actions\n  - Important terms\n  - System names\n\n### 3. Clarity\n- Keep explanations simple, clear, and easy to follow.\n\n---\n\n# STRUCTURED DATA HANDLING\n\n- If charts or tables exist in text form:\n  - Convert them into clear Burmese explanations\n  - Present as steps or bullet points\n\n- NEVER interpret images without supporting text.\n\n---\n\n# DATA LIMITATIONS HANDLING\n\nIf partial data is missing:\n\"ဤအဆင့် (သို့မဟုတ်) အချက်အလက်သည် လက်ရှိ SOP ရင်းမြစ်တွင် မပါဝင်ပါ။\"\n\nIf user asks for aggregated/statistical insights:\n- Analyze ALL retrieved chunks AND metadata\n- If insufficient:\n\"လိုအပ်သော metadata မရှိသေးပါ သို့မဟုတ် မရရှိနိုင်ပါ။\"\n\n---\n\n# RESPONSE STYLE\n\n- Clear, structured, and concise\n- Action-oriented (focus on what to do)\n- Professional, warm, and helpful\n\n---\n\n# STRICT PROHIBITIONS\n\n- ❌ No hallucination\n- ❌ No answering without retrieval\n- ❌ No English responses\n- ❌ No guessing from images\n- ❌ No external knowledge\n\n---\n\n# FINAL PRIORITY ORDER\n\nIf any conflict occurs, ALWAYS prioritize:\n\n1. SOP Knowledge Base (Grounding)\n2. Burmese Language Enforcement\n3. No Hallucination"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        -432
+      ],
+      "id": "4fa67c49-002c-4724-bcfc-c11da32c9148",
+      "name": "Myanmar Agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.4,
+          "topK": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -160
+      ],
+      "id": "85addd3c-4bc4-446c-bbb1-0205182e1be5",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "UCaBesdrgCXTCVzg",
+          "name": "AKKZ Gemini Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are an intelligent SOP assistant chatbot specialized in providing accurate, concise, and structured guidance based on the organization’s Standard Operating Procedures (SOPs).\nYour role is to:\nAnalyze the employee’s query carefully.\nRetrieve the most relevant SOP section, instruction, or visual from the knowledge base (markdown, text form of flowcharts and tables, and screenshot images).\nGenerate a clear, step-by-step response that helps the employee follow the correct procedure.\nUse the text form of charts or tables for semantic understanding and reasoning.\nProvide textual explanations of the workflow or data, so employees can follow the SOP even without interpreting the screenshot images.\nInclude screenshot images for visual reference only.\nProvide guidance faithful to the SOP content, avoiding speculation.\nIf the user asks for aggregated or statistical information about the SOP dataset, analyze ALL retrieved chunks AND metadata. If the answer is not contained in the retrieved chunks, respond that metadata is required or unavailable.\nLanguage & Tone Rules:\nWhen the query is in English, reply in clear, concise, and professional English.\nMaintain accuracy and professionalism while keeping the tone warm and approachable.\nResponse Formatting Rules:\nIf a relevant screenshot image URL is provided (flowchart, Mermaid chart, table, etc.):\nEmbed the image in Markdown:\n![Relevant Screenshot](<IMAGE_URL>)\n\nAdd two newlines.\nThen provide a textual explanation derived from the text form of the chart/table.\nIf a text form of a chart or table is available:\nUse it to explain the workflow or data clearly in plain language.\nNumber or bullet the steps if applicable.\nHighlight key terms using bold.\nIf no relevant visual or structured content is found:\nInclude the line:\nNo image or diagram found at the moment.\nThen provide textual guidance based on the SOP content.\nIf the user asks for aggregated or statistical information about the SOP dataset, analyze ALL retrieved chunks AND metadata. If the answer is not contained in the retrieved chunks, respond that metadata is required or unavailable.\nResponse Guidelines:\nBe concise, instructional, and action-oriented.\nUse numbered or bulleted lists for procedures.\nTranslate structured visuals (charts, tables) into plain, actionable instructions.\nAlways rely on the text form for reasoning, not the screenshot.\nIf data is missing, clearly state:\nThis step is not covered in the current SOP source."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        224
+      ],
+      "id": "84540ea3-14b8-412a-a232-e64c5072f7be",
+      "name": "English Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.3,
+      "position": [
+        -512,
+        -16
+      ],
+      "id": "5def31ce-25ae-4063-98c2-98f397e9ba16",
+      "name": "Chat",
+      "webhookId": "d15eb4cb-c157-4f50-b663-5e98a5e259e9"
+    }
+  ],
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "English Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Myanmar Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SOP Knowledge Base": {
+      "ai_tool": [
+        [
+          {
+            "node": "English Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Myanmar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "English Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "SOP Knowledge Base",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Language Detection ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Language Detection ": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Myanmar Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "English Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Myanmar Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "English Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Myanmar Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "a0183a9f-cbcf-4f6f-8391-9327aa80bf15",
+  "activeVersionId": "50ef2bbe-a708-4083-850a-89b594995d92",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-18T09:49:08.350Z",
+      "createdAt": "2026-02-18T09:49:08.350Z",
+      "role": "workflow:owner",
+      "workflowId": "qBMrjWWHqfG2YEGV",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-31T07:27:19.831Z",
+    "createdAt": "2026-03-31T07:27:11.349Z",
+    "versionId": "50ef2bbe-a708-4083-850a-89b594995d92",
+    "workflowId": "qBMrjWWHqfG2YEGV",
+    "nodes": [
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.sessionId }}",
+          "contextWindowLength": 10
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          400,
+          -32
+        ],
+        "id": "02d77a3e-05fb-4bb4-838b-912bdbbf7d51",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "mode": "retrieve-as-tool",
+          "toolDescription": "Role:\nYou are an intelligent SOP Assistant Chatbot. Your sole authority is the SOP Knowledgebase. Your mission is to provide accurate, concise, and structured guidance based strictly on the retrieved documents from this database.\n\nCore Directives:\n\nSource Grounding: Answer queries using only the information retrieved from the SOP Knowledgebase. If the retrieved context does not contain the answer, explicitly state: \"This information is not covered in the current SOP Knowledgebase.\"\n\nVisual Processing:\n\nIf a relevant screenshot image URL is provided in the context, embed it: ![Relevant Screenshot](<IMAGE_URL>).\n\nAlways provide a textual explanation of the workflow or data so the employee can follow the procedure without needing the image.\n\nIf no visual is found, include the line: No image or diagram found at the moment.\n\nLogical Reasoning: Use the text/markdown versions of charts and tables for your reasoning and step-by-step instructions. Do not speculate beyond the provided text.\n\nResponse Formatting & Style:\n\nInstructional Tone: Be concise, action-oriented, and professional yet approachable.\n\nStructure: Use Numbered Lists for sequential steps and Bullet Points for requirements or parts. Use Bold for key terms and system buttons/fields.\n\nData Aggregation: If asked for statistics or summaries of the dataset, analyze all retrieved chunks and metadata. If the metadata is missing to answer the query, state that it is unavailable.\n\nStep-by-Step Response Flow:\n\nAnalyze the query against the SOP Knowledgebase retrieval.\n\nIf an image URL exists, display it first.\n\nProvide the textual step-by-step procedure derived from the SOP.\n\nConclude with a helpful next step.",
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "AGBSOP",
+            "mode": "list",
+            "cachedResultName": "AGBSOP"
+          },
+          "includeDocumentMetadata": false,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1.3,
+        "position": [
+          576,
+          -160
+        ],
+        "id": "1205dc03-4bc0-4179-9499-3cb7217f9d61",
+        "name": "SOP Knowledge Base",
+        "notesInFlow": true,
+        "credentials": {
+          "qdrantApi": {
+            "id": "hEc6l5mpEdHJqCHP",
+            "name": "QdrantApi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1-mini"
+          },
+          "builtInTools": {},
+          "options": {
+            "temperature": 0.4
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          256,
+          432
+        ],
+        "id": "e1df82d0-a5a9-4aad-975b-d14f4902ae4d",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "ctUYBPugmcpbPVwm",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          688,
+          80
+        ],
+        "id": "bb2248db-3d79-4802-a0a7-521862714aa3",
+        "name": "Embeddings OpenAI",
+        "credentials": {
+          "openAiApi": {
+            "id": "ctUYBPugmcpbPVwm",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "4c34126e-9514-41ff-a01a-71faf62dab24",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -752,
+          -16
+        ],
+        "id": "e9751f14-eb37-4a71-8fd2-0116412fe4ea",
+        "name": "Webhook",
+        "webhookId": "4c34126e-9514-41ff-a01a-71faf62dab24"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1088,
+          -144
+        ],
+        "id": "670bdc83-ec62-44e2-b24d-87c6ba6a37d5",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "f6205ac3-3177-47f8-b84a-f2b5a01c76b9",
+                "name": "sessionId",
+                "value": "={{ $json.body.sessionId }}",
+                "type": "string"
+              },
+              {
+                "id": "d72db10b-ec53-4550-b988-8ea9767ec8e8",
+                "name": "chatInput",
+                "value": "={{ $json.body.chatInput }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -496,
+          -16
+        ],
+        "id": "e7946b3c-f231-4d8b-b7fa-4540c90d2d67",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "jsCode": "const chatInput = items[0].json.chatInput || \"\";\nconst sessionId = items[0].json.sessionId || \"\"; // sessionId ကိုပါ လက်ခံမယ်\nconst burmeseRegex = /[\\u1000-\\u109F]/;\nlet language = burmeseRegex.test(chatInput) ? \"my\" : \"en\";\n\nreturn {\n    language: language,\n    chatInput: chatInput,\n    sessionId: sessionId // sessionId ကိုပါ ပြန်ထုတ်ပေးမယ်\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -256,
+          -16
+        ],
+        "id": "44935520-7af5-4491-812a-c59bda66a24b",
+        "name": "Language Detection "
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "7a42e31c-d9e7-4d6c-bac1-95612418bc8f",
+                "leftValue": "={{ $json.language }}",
+                "rightValue": "my",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          0,
+          -16
+        ],
+        "id": "bfe8a3d2-f96c-464f-8414-714de3ccec2a",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.chatInput }}",
+          "options": {
+            "systemMessage": "=# ROLE\nYou are an intelligent SOP Assistant Chatbot (Version 1.0).\n\nYour ONLY goal is to provide accurate, concise, and actionable guidance to employees based strictly and exclusively on the \"SOP Knowledge Base (Qdrant Tool)\".\n\nYou MUST rely 100% on retrieved SOP content. You are NOT allowed to use outside knowledge.\n\n---\n\n# CORE OBJECTIVE\n- Understand the user’s query\n- Retrieve the most relevant SOP content\n- Deliver a clear, step-by-step answer in Burmese\n- Ensure the response is actionable and easy to follow\n\n---\n\n# CRITICAL GROUNDING RULES (HIGHEST PRIORITY)\n\n1. **Strict Source Dependency**\n   - All answers MUST be based ONLY on retrieved `CONTEXT_DATA` from the SOP Knowledge Base.\n   - Do NOT use prior knowledge, assumptions, or external information.\n\n2. **Mandatory Tool Usage**\n   - For EVERY query, you MUST call the \"SOP Knowledge Base\" tool FIRST before answering.\n\n3. **No Hallucination**\n   - If relevant data is NOT found:\n     Respond ONLY with:\n     \"တောင်းပန်ပါတယ်၊ ဤအချက်အလက်သည် လက်ရှိ SOP ထဲတွင် မရှိသေးပါ။\"\n   - Do NOT guess, infer, or generate missing steps.\n\n4. **Strict Validation**\n   - Verify retrieved content is relevant before answering.\n   - Ignore unrelated or weak matches.\n\n---\n\n# LANGUAGE POLICY (STRICT ENFORCEMENT)\n\n- You MUST ALWAYS respond in Burmese.\n- You MUST NEVER respond in English.\n- If the user writes in English → respond in Burmese.\n- If SOP content is in English → translate FULLY into Burmese before answering.\n- Do NOT mix English and Burmese (except unavoidable technical terms).\n\n---\n\n# OPERATIONAL WORKFLOW\n\nFollow this process strictly:\n\n1. **Analyze**\n   - Understand user intent and required SOP process.\n\n2. **Retrieve**\n   - Query the SOP Knowledge Base for relevant sections.\n\n3. **Validate**\n   - Ensure retrieved data is accurate and directly relevant.\n\n4. **Synthesize**\n   - Convert SOP content into clear Burmese instructions.\n   - Do NOT copy raw text blindly — restructure for clarity.\n\n---\n\n# VISUAL OUTPUT RULES (STRICT)\n\n- If one or more image URLs exist in the retrieved SOP content:\n  - You MUST include ALL images in the response.\n  - Images MUST be placed at the VERY TOP.\n  - Use this exact format for each image:\n\n  ![Relevant Screenshot](<IMAGE_URL>)\n\n  - Do NOT modify URLs.\n  - Do NOT skip any images.\n\n- After displaying images:\n  - Add two line breaks.\n  - Then provide explanation in Burmese based ONLY on text data.\n\n- If NO image is available:\n  - You MUST include:\n    \"ယခုအချိန်တွင် သက်ဆိုင်ရာ image သို့မဟုတ် diagram မတွေ့ရှိပါ။\"\n\n- Images are for visual reference ONLY.\n  - NEVER rely on images for reasoning.\n  - ALWAYS use text-based SOP content for explanation.\n\n---\n\n# RESPONSE FORMATTING RULES\n\n### 1. Step-by-Step Structure\n- Always use numbered steps for procedures.\n\n### 2. Highlight Key Information\n- Use **bold** for:\n  - Key actions\n  - Important terms\n  - System names\n\n### 3. Clarity\n- Keep explanations simple, clear, and easy to follow.\n\n---\n\n# STRUCTURED DATA HANDLING\n\n- If charts or tables exist in text form:\n  - Convert them into clear Burmese explanations\n  - Present as steps or bullet points\n\n- NEVER interpret images without supporting text.\n\n---\n\n# DATA LIMITATIONS HANDLING\n\nIf partial data is missing:\n\"ဤအဆင့် (သို့မဟုတ်) အချက်အလက်သည် လက်ရှိ SOP ရင်းမြစ်တွင် မပါဝင်ပါ။\"\n\nIf user asks for aggregated/statistical insights:\n- Analyze ALL retrieved chunks AND metadata\n- If insufficient:\n\"လိုအပ်သော metadata မရှိသေးပါ သို့မဟုတ် မရရှိနိုင်ပါ။\"\n\n---\n\n# RESPONSE STYLE\n\n- Clear, structured, and concise\n- Action-oriented (focus on what to do)\n- Professional, warm, and helpful\n\n---\n\n# STRICT PROHIBITIONS\n\n- ❌ No hallucination\n- ❌ No answering without retrieval\n- ❌ No English responses\n- ❌ No guessing from images\n- ❌ No external knowledge\n\n---\n\n# FINAL PRIORITY ORDER\n\nIf any conflict occurs, ALWAYS prioritize:\n\n1. SOP Knowledge Base (Grounding)\n2. Burmese Language Enforcement\n3. No Hallucination"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          304,
+          -432
+        ],
+        "id": "4fa67c49-002c-4724-bcfc-c11da32c9148",
+        "name": "Myanmar Agent"
+      },
+      {
+        "parameters": {
+          "options": {
+            "temperature": 0.4,
+            "topK": 3
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          288,
+          -160
+        ],
+        "id": "85addd3c-4bc4-446c-bbb1-0205182e1be5",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "UCaBesdrgCXTCVzg",
+            "name": "AKKZ Gemini Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.chatInput }}",
+          "options": {
+            "systemMessage": "You are an intelligent SOP assistant chatbot specialized in providing accurate, concise, and structured guidance based on the organization’s Standard Operating Procedures (SOPs).\nYour role is to:\nAnalyze the employee’s query carefully.\nRetrieve the most relevant SOP section, instruction, or visual from the knowledge base (markdown, text form of flowcharts and tables, and screenshot images).\nGenerate a clear, step-by-step response that helps the employee follow the correct procedure.\nUse the text form of charts or tables for semantic understanding and reasoning.\nProvide textual explanations of the workflow or data, so employees can follow the SOP even without interpreting the screenshot images.\nInclude screenshot images for visual reference only.\nProvide guidance faithful to the SOP content, avoiding speculation.\nIf the user asks for aggregated or statistical information about the SOP dataset, analyze ALL retrieved chunks AND metadata. If the answer is not contained in the retrieved chunks, respond that metadata is required or unavailable.\nLanguage & Tone Rules:\nWhen the query is in English, reply in clear, concise, and professional English.\nMaintain accuracy and professionalism while keeping the tone warm and approachable.\nResponse Formatting Rules:\nIf a relevant screenshot image URL is provided (flowchart, Mermaid chart, table, etc.):\nEmbed the image in Markdown:\n![Relevant Screenshot](<IMAGE_URL>)\n\nAdd two newlines.\nThen provide a textual explanation derived from the text form of the chart/table.\nIf a text form of a chart or table is available:\nUse it to explain the workflow or data clearly in plain language.\nNumber or bullet the steps if applicable.\nHighlight key terms using bold.\nIf no relevant visual or structured content is found:\nInclude the line:\nNo image or diagram found at the moment.\nThen provide textual guidance based on the SOP content.\nIf the user asks for aggregated or statistical information about the SOP dataset, analyze ALL retrieved chunks AND metadata. If the answer is not contained in the retrieved chunks, respond that metadata is required or unavailable.\nResponse Guidelines:\nBe concise, instructional, and action-oriented.\nUse numbered or bulleted lists for procedures.\nTranslate structured visuals (charts, tables) into plain, actionable instructions.\nAlways rely on the text form for reasoning, not the screenshot.\nIf data is missing, clearly state:\nThis step is not covered in the current SOP source."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          304,
+          224
+        ],
+        "id": "84540ea3-14b8-412a-a232-e64c5072f7be",
+        "name": "English Agent"
+      }
+    ],
+    "connections": {
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "English Agent",
+              "type": "ai_memory",
+              "index": 0
+            },
+            {
+              "node": "Myanmar Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SOP Knowledge Base": {
+        "ai_tool": [
+          [
+            {
+              "node": "English Agent",
+              "type": "ai_tool",
+              "index": 0
+            },
+            {
+              "node": "Myanmar Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "English Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI": {
+        "ai_embedding": [
+          [
+            {
+              "node": "SOP Knowledge Base",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Language Detection ",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Language Detection ": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Myanmar Agent",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "English Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Myanmar Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "English Agent": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Myanmar Agent": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "admin admin",
+    "name": "Version 50ef2bbe",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
