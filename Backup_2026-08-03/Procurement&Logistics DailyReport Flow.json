@@ -1,0 +1,1505 @@
+{
+  "updatedAt": "2026-05-27T05:12:03.881Z",
+  "createdAt": "2026-05-18T06:58:55.510Z",
+  "id": "zS25sJCdfsanbdEU",
+  "name": "Procurement&Logistics DailyReport Flow",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-skip",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3896bed6-fda2-425e-b853-542510a2c20a",
+      "name": "Is New Combo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const actDate = $('Parse JSON Response').first().json.date;\nconst actEmp  = $('Parse JSON Response').first().json.employee;\n\nconst summaryRows = $input.all().map(r => r.json);\n\nfunction normDate(d) {\n  if (!d) return '';\n  return String(d).split('T')[0].toLowerCase().trim();\n}\n\nconst normAct = normDate(actDate);\n\nlet blankRowIndex = -1;\nlet alreadyExists = false;\n\n// C6:D56 range — ALL rows are data rows, no header, start from index 0\nfor (let i = 0; i < summaryRows.length; i++) {\n  const rowDate = normDate(summaryRows[i].Date || '');\n  const rowEmp  = String(summaryRows[i].Employee || '').toLowerCase().trim();\n  const actEmpNorm = actEmp.toLowerCase().trim();\n\n  if (rowDate && rowEmp) {\n    if (\n      (rowDate === normAct || rowDate.includes(normAct) || normAct.includes(rowDate)) &&\n      rowEmp === actEmpNorm\n    ) {\n      alreadyExists = true;\n      break;\n    }\n  } else if (!rowDate && !rowEmp && blankRowIndex === -1) {\n    blankRowIndex = i;\n  }\n}\n\nif (alreadyExists) {\n  return [{ json: { skip: true, reason: 'Combo already exists in Monthly Summary' } }];\n}\n\nif (blankRowIndex === -1) {\n  return [{ json: { skip: true, reason: 'No blank rows left in Monthly Summary' } }];\n}\n\n// blankRowIndex 0 = row 6 in Excel, so Excel row = blankRowIndex + 6\nconst excelRow = blankRowIndex + 6;\n\nreturn [{\n  json: {\n    skip: false,\n    excelRow,\n    date: actDate,\n    employee: actEmp,\n    dateCell: 'C' + excelRow,\n    employeeCell: 'D' + excelRow\n  }\n}];"
+      },
+      "id": "af404e45-4689-4c97-a839-c44645c8f5d3",
+      "name": "Check If Combo Exists",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -176,
+        272
+      ],
+      "id": "2c05e49f-d9f3-44e2-b1eb-0c21bdab385a",
+      "name": "Loop Activities"
+    },
+    {
+      "parameters": {
+        "jsCode": "// OpenAI ရဲ့ content list ထဲက text ကို အဆင့်ဆင့် ရှာယူပါတယ်\nconst content = $input.first().json.output[0].content;\nconst textItem = content.find(item => item.type === 'output_text');\nconst text = textItem ? textItem.text : \"\";\n\nif (!text) {\n  throw new Error(\"AI ဆီက စာသားရှာမတွေ့ပါဘူး။ OpenAI node settings ကို ပြန်စစ်ပေးပါ။\");\n}\n\n// Markdown formatting တွေကို ရှင်းထုတ်ပါတယ်\nconst cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();\n\n// JSON Array အဖြစ် ပြောင်းလဲပါတယ်\nconst activities = JSON.parse(cleaned);\n\n// Row တစ်ခုချင်းစီ ခွဲထုတ်ပေးပါတယ်\nreturn activities.map(a => ({ json: a }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1264,
+        272
+      ],
+      "id": "d5545cb4-57d7-48d2-9afd-e7fc11606194",
+      "name": "Parse JSON Response"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are a data extraction assistant. Extract each timestamped activity \nfrom a daily report message into a JSON array. Return ONLY valid JSON \narray with no explanation, no markdown, no code fences.\n\nIMPORTANT: Be thorough and consistent. Process every single timestamped \nactivity — do not skip any. Read the full message before extracting.\n\nEach object must have exactly these keys:\n\n- date: report date as DD-MMM-YYYY (e.g., 11-May-2026)\n\n- employee: employee name provided above the message\n\n- time: format as H:MM AM/PM (e.g., 8:45 AM, 1:15 PM)\n  Use empty string if no time is stated.\n  Note: times in the message may be out of order — extract \n  as-is, do not reorder.\n\n- category: classify into exactly one of:\n  Finance, Procurement, Inventory, Operations, \n  Customer Service, Technical/Field, Internal, Admin\n\n- description: clean and concise activity description.\n  Fix obvious typos (e.g., \"fowllowed\" → \"followed\").\n  Do NOT repeat names already captured in the customer field.\n\n- customer: ALWAYS extract any person, company, team, or \n  department connected to the activity — including:\n    • complainants:  \"complaint from X\"  → X\n    • recipients:    \"informed X\"        → X\n    • payers/payees: \"payment from X\"    → X\n    • suppliers, vendors, stakeholders\n    • internal teams: \"DT Team\", \"Finance\", \"Call Center\"\n  If multiple, join with \" / \"\n  Use empty string ONLY if the activity is purely internal \n  with absolutely no external person or team involved.\n\n- status: one of: Completed, In Progress, Pending\n    • Completed  → past tense, fully done\n    • In Progress → ongoing, following up, waiting for reply\n    • Pending    → blocked, not yet started, awaiting approval\n\n- remarks: Infer logical follow-up context based on status \n  and action. Guidelines:\n    • If explicitly stated in message → always include\n      (e.g., \"not found yet\", \"to settle tomorrow\")\n    • For Pending items → note what is being waited for\n      (e.g., informed DT Team + Pending → \"Awaiting DT response\")\n    • For In Progress follow-ups → note the expected outcome\n      (e.g., \"followed up payment to settle tomorrow\" \n       → \"Payment to be settled tomorrow\")\n    • For Completed routine tasks with no extra context \n      → use empty string"
+            },
+            {
+              "content": "=Employee: {{ $json.employeeName }}\nDate: {{ $json.reportDate }}\nMessage:\n{{ $json.rawMessage }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        -1600,
+        272
+      ],
+      "id": "c2b562f9-fa1f-417c-9da9-64a15952d359",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a52f1a25-dbbe-4628-8650-82ec66bebf24",
+              "name": "employeeName",
+              "value": "={{ $json.from.user.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "970b8b4e-9654-43a1-a7d2-092bce6cd3e1",
+              "name": "rawMessage",
+              "value": "={{ $json.body.content.replace(/(<([^>]+)>)/gi, \"\") }}",
+              "type": "string"
+            },
+            {
+              "id": "39dd8be6-7aa1-4c60-a436-56384cdfa8d3",
+              "name": "reportDate",
+              "value": "={{ $json.createdDateTime }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1904,
+        272
+      ],
+      "id": "bc3e065f-66ce-4ff1-84f4-6d236dde47f5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "item",
+        "site": {
+          "__rl": true,
+          "value": "agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2",
+          "mode": "list",
+          "cachedResultName": "Procurement & Logistics"
+        },
+        "list": {
+          "__rl": true,
+          "value": "9829de94-6e38-4930-a5e8-3646e727b408",
+          "mode": "list",
+          "cachedResultName": "Documents"
+        },
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "contentType",
+            "fields",
+            "id",
+            "parentReference",
+            "webUrl"
+          ]
+        },
+        "simplify": false,
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.microsoftSharePoint",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        272
+      ],
+      "id": "fb9b4c4d-3f70-48ef-b79b-d049181d0a7a",
+      "name": "Get many items1",
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "bRUq4dRUQmBuFdLH",
+          "name": "AutomationMSSharepoint"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $json.id }}?expand=driveItem",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftExcelOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -560,
+        272
+      ],
+      "id": "9a133f8f-069a-4df7-a5d2-7ec6b40a7e8c",
+      "name": "Get Driven Item ID",
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "wrvgsKxBcbyxQpbV",
+          "name": "Microsoft SharePoint account"
+        },
+        "microsoftExcelOAuth2Api": {
+          "id": "aWtHVmrLgxw0hGlF",
+          "name": "Automation Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $('Get Driven Item ID').first().json.id }}/driveItem/workbook/worksheets('All Activities')",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftExcelOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        336,
+        368
+      ],
+      "id": "5eb0b2fc-09f1-455c-a587-a34188b16205",
+      "name": "Get Sheet ID",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "aWtHVmrLgxw0hGlF",
+          "name": "Automation Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $('Get Driven Item ID').first().json.id }}/driveItem/workbook/worksheets('All Activities')/tables('Activity')",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftExcelOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        368
+      ],
+      "id": "c84879ec-0956-45a7-955d-c70acb8c1fe0",
+      "name": "Get Table ID",
+      "alwaysOutputData": false,
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "aWtHVmrLgxw0hGlF",
+          "name": "Automation Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $('Get Driven Item ID').first().json.id }}/driveItem/workbook/worksheets('{{ $('Get Sheet Name').first().json.sheetName }}')/range(address='C6:D56')",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftExcelOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        304,
+        0
+      ],
+      "id": "689df515-1561-4bba-a744-2ed08d3501d7",
+      "name": "Read Monthly Summary",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "aWtHVmrLgxw0hGlF",
+          "name": "Automation Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $('Get Driven Item ID').first().json.id }}/driveItem/workbook/worksheets('All Activities')/tables('Activity')/rows/add",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftExcelOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"values\": [[\n    \"{{ $json.date }}\",\n    \"{{ $json.employee }}\",\n    \"{{ $json.time }}\",\n    \"{{ $json.category }}\",\n    \"{{ $json.description }}\",\n    \"{{ $json.customer }}\",\n    \"{{ $json.status }}\",\n    \"{{ $json.remarks }}\"\n  ]]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1312,
+        368
+      ],
+      "id": "071ec705-5bd8-4a6a-8933-04246ec5ab3b",
+      "name": "Append rows to table3",
+      "alwaysOutputData": false,
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "aWtHVmrLgxw0hGlF",
+          "name": "Automation Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $('Get Driven Item ID').first().json.id }}/driveItem/workbook/tables('{{ $('Get Sheet Name').first().json.sheetName }}')/rows/add",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftExcelOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"values\": [[\n    null,\n    \"{{ $json.date }}\",\n    \"{{ $json.employee }}\",\n    null, null, null, null, null\n  ]]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1584,
+        176
+      ],
+      "id": "9bd9ffe7-02e4-408d-a92a-c439d80d76f5",
+      "name": "Monthly Summary Table1",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "aWtHVmrLgxw0hGlF",
+          "name": "Automation Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const values = $input.first().json.values;\n\n// All rows are data rows (no header in range C6:D56)\nreturn values.map(row => ({\n  json: {\n    Date: row[0],\n    Employee: row[1]\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "7ccbb560-0a05-4704-a33b-bb438c4f44bd",
+      "name": "Transform Code Node"
+    },
+    {
+      "parameters": {
+        "jsCode": "const date = $('Parse JSON Response').first().json.date;\nconst month = date.split('-')[1]; \n\nconst monthMap = {\n  'Jan': 'January', 'Feb': 'February', 'Mar': 'March',\n  'Apr': 'April',   'May': 'May',      'Jun': 'June',\n  'Jul': 'July',    'Aug': 'August',   'Sep': 'September',\n  'Oct': 'October', 'Nov': 'November', 'Dec': 'December'\n};\n\nconst fullMonth = monthMap[month] || month;\n\n// Now both are the same: No Spacing\nconst sheetName = fullMonth + 'MonthlySummary'; \nconst tableName = fullMonth + 'MonthlySummary'; \n\nreturn [{ json: { sheetName, tableName } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "70e16b6c-8101-4b17-bf04-356a48df773b",
+      "name": "Get Sheet Name"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $('Parse JSON Response').all();\nconst loopIndex = $('Loop Activities').context?.currentRunIndex ?? 0;\nconst item = items[loopIndex]?.json;\n\nif (!item) {\n  return [{ json: { error: 'No item found at index ' + loopIndex } }];\n}\n\nreturn [{\n  json: {\n    date: item.date,\n    employee: item.employee,\n    time: item.time,\n    category: item.category,\n    description: item.description,\n    customer: item.customer || \"\",\n    status: item.status,\n    remarks: item.remarks\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        368
+      ],
+      "id": "c829438c-f06c-4aa6-a3c8-a468dd893df5",
+      "name": "Name Transfer Route"
+    },
+    {
+      "parameters": {
+        "resource": "channelMessage",
+        "operation": "getAll",
+        "teamId": {
+          "__rl": true,
+          "value": "1472455c-1639-4c21-a4b8-dc5d0a5c71e9",
+          "mode": "list",
+          "cachedResultName": "Procurement & Logistics"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "19:6361f5d322864d6e9e5780310b72da6c@thread.tacv2",
+          "mode": "list",
+          "cachedResultName": "DailyReport",
+          "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A6361f5d322864d6e9e5780310b72da6c%40thread.tacv2/DailyReport?groupId=1472455c-1639-4c21-a4b8-dc5d0a5c71e9&tenantId=dc60f70a-bd29-4a9e-a6bb-faf5b3b8fc3f&allowXTenantAccess=False"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        -2448,
+        272
+      ],
+      "id": "2853d5d2-73a2-45e2-945a-22401d65966d",
+      "name": "Get many messages",
+      "webhookId": "be0f23c9-c3f4-45c9-80d4-622169d3c1c0",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "mp7wxiJvWU4dqRu5",
+          "name": "AutomationMSTeam"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "abd44253-fc15-458f-a94a-24d338e4df44",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "={{ $('Procurement and Logistics Team Chat').first().json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -2192,
+        272
+      ],
+      "id": "df3fe1cd-72f2-4710-a09e-90bcc23e31e0",
+      "name": "Filter MessageID"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f67a1da2-d44a-4805-9c8f-3c39f422e85f",
+              "leftValue": "={{ $json.webUrl }}",
+              "rightValue": "=P%26LDailyReportFile.xlsx",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -816,
+        272
+      ],
+      "id": "e36ed247-2566-408a-bc90-216537d841d5",
+      "name": "Filter WebURL"
+    },
+    {
+      "parameters": {
+        "teamId": {
+          "__rl": true,
+          "value": "1472455c-1639-4c21-a4b8-dc5d0a5c71e9",
+          "mode": "list",
+          "cachedResultName": "Procurement & Logistics"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "19:6361f5d322864d6e9e5780310b72da6c@thread.tacv2",
+          "mode": "list",
+          "cachedResultName": "DailyReport",
+          "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A6361f5d322864d6e9e5780310b72da6c%40thread.tacv2/DailyReport?groupId=1472455c-1639-4c21-a4b8-dc5d0a5c71e9&tenantId=dc60f70a-bd29-4a9e-a6bb-faf5b3b8fc3f&allowXTenantAccess=False"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftTeamsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2784,
+        272
+      ],
+      "id": "13810899-d263-4d07-89d1-fd1aac5ba97b",
+      "name": "Procurement and Logistics Team Chat",
+      "webhookId": "9cd6a4b5-3792-4a07-a695-f94b343d7b64",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "mp7wxiJvWU4dqRu5",
+          "name": "AutomationMSTeam"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Is New Combo?": {
+      "main": [
+        [
+          {
+            "node": "Monthly Summary Table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Combo Exists": {
+      "main": [
+        [
+          {
+            "node": "Is New Combo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Activities": {
+      "main": [
+        [
+          {
+            "node": "Get Sheet Name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Sheet ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON Response": {
+      "main": [
+        [
+          {
+            "node": "Get many items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many items1": {
+      "main": [
+        [
+          {
+            "node": "Filter WebURL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Driven Item ID": {
+      "main": [
+        [
+          {
+            "node": "Loop Activities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sheet ID": {
+      "main": [
+        [
+          {
+            "node": "Get Table ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Table ID": {
+      "main": [
+        [
+          {
+            "node": "Name Transfer Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Monthly Summary": {
+      "main": [
+        [
+          {
+            "node": "Transform Code Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append rows to table3": {
+      "main": [
+        [
+          {
+            "node": "Loop Activities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Code Node": {
+      "main": [
+        [
+          {
+            "node": "Check If Combo Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sheet Name": {
+      "main": [
+        [
+          {
+            "node": "Read Monthly Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Name Transfer Route": {
+      "main": [
+        [
+          {
+            "node": "Append rows to table3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Filter MessageID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter MessageID": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter WebURL": {
+      "main": [
+        [
+          {
+            "node": "Get Driven Item ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procurement and Logistics Team Chat": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Procurement and Logistics Team Chat": {
+      "subscriptionIds": [
+        "3bca4fc5-bbbc-407a-a69b-5be84d4f366b"
+      ],
+      "webhookSecret": "d38241a5f6b68c7ab88959d88b64775f03450e89249965830d08992c44419733"
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "d05252ba-b973-4c1d-beaf-a8bc8cb475fd",
+  "activeVersionId": "d05252ba-b973-4c1d-beaf-a8bc8cb475fd",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-18T06:58:55.510Z",
+      "createdAt": "2026-05-18T06:58:55.510Z",
+      "role": "workflow:owner",
+      "workflowId": "zS25sJCdfsanbdEU",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-06-04T10:15:27.479Z",
+    "createdAt": "2026-05-27T05:12:03.883Z",
+    "versionId": "d05252ba-b973-4c1d-beaf-a8bc8cb475fd",
+    "workflowId": "zS25sJCdfsanbdEU",
+    "nodes": [
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "cond-skip",
+                "leftValue": "={{ $json.skip }}",
+                "rightValue": false,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "3896bed6-fda2-425e-b853-542510a2c20a",
+        "name": "Is New Combo?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1152,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const actDate = $('Parse JSON Response').first().json.date;\nconst actEmp  = $('Parse JSON Response').first().json.employee;\n\nconst summaryRows = $input.all().map(r => r.json);\n\nfunction normDate(d) {\n  if (!d) return '';\n  return String(d).split('T')[0].toLowerCase().trim();\n}\n\nconst normAct = normDate(actDate);\n\nlet blankRowIndex = -1;\nlet alreadyExists = false;\n\n// C6:D56 range — ALL rows are data rows, no header, start from index 0\nfor (let i = 0; i < summaryRows.length; i++) {\n  const rowDate = normDate(summaryRows[i].Date || '');\n  const rowEmp  = String(summaryRows[i].Employee || '').toLowerCase().trim();\n  const actEmpNorm = actEmp.toLowerCase().trim();\n\n  if (rowDate && rowEmp) {\n    if (\n      (rowDate === normAct || rowDate.includes(normAct) || normAct.includes(rowDate)) &&\n      rowEmp === actEmpNorm\n    ) {\n      alreadyExists = true;\n      break;\n    }\n  } else if (!rowDate && !rowEmp && blankRowIndex === -1) {\n    blankRowIndex = i;\n  }\n}\n\nif (alreadyExists) {\n  return [{ json: { skip: true, reason: 'Combo already exists in Monthly Summary' } }];\n}\n\nif (blankRowIndex === -1) {\n  return [{ json: { skip: true, reason: 'No blank rows left in Monthly Summary' } }];\n}\n\n// blankRowIndex 0 = row 6 in Excel, so Excel row = blankRowIndex + 6\nconst excelRow = blankRowIndex + 6;\n\nreturn [{\n  json: {\n    skip: false,\n    excelRow,\n    date: actDate,\n    employee: actEmp,\n    dateCell: 'C' + excelRow,\n    employeeCell: 'D' + excelRow\n  }\n}];"
+        },
+        "id": "af404e45-4689-4c97-a839-c44645c8f5d3",
+        "name": "Check If Combo Exists",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          816,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          -176,
+          272
+        ],
+        "id": "2c05e49f-d9f3-44e2-b1eb-0c21bdab385a",
+        "name": "Loop Activities"
+      },
+      {
+        "parameters": {
+          "jsCode": "// OpenAI ရဲ့ content list ထဲက text ကို အဆင့်ဆင့် ရှာယူပါတယ်\nconst content = $input.first().json.output[0].content;\nconst textItem = content.find(item => item.type === 'output_text');\nconst text = textItem ? textItem.text : \"\";\n\nif (!text) {\n  throw new Error(\"AI ဆီက စာသားရှာမတွေ့ပါဘူး။ OpenAI node settings ကို ပြန်စစ်ပေးပါ။\");\n}\n\n// Markdown formatting တွေကို ရှင်းထုတ်ပါတယ်\nconst cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();\n\n// JSON Array အဖြစ် ပြောင်းလဲပါတယ်\nconst activities = JSON.parse(cleaned);\n\n// Row တစ်ခုချင်းစီ ခွဲထုတ်ပေးပါတယ်\nreturn activities.map(a => ({ json: a }));"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1264,
+          272
+        ],
+        "id": "d5545cb4-57d7-48d2-9afd-e7fc11606194",
+        "name": "Parse JSON Response"
+      },
+      {
+        "parameters": {
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o",
+            "mode": "list",
+            "cachedResultName": "GPT-4O"
+          },
+          "responses": {
+            "values": [
+              {
+                "role": "system",
+                "content": "=You are a data extraction assistant. Extract each timestamped activity \nfrom a daily report message into a JSON array. Return ONLY valid JSON \narray with no explanation, no markdown, no code fences.\n\nIMPORTANT: Be thorough and consistent. Process every single timestamped \nactivity — do not skip any. Read the full message before extracting.\n\nEach object must have exactly these keys:\n\n- date: report date as DD-MMM-YYYY (e.g., 11-May-2026)\n\n- employee: employee name provided above the message\n\n- time: format as H:MM AM/PM (e.g., 8:45 AM, 1:15 PM)\n  Use empty string if no time is stated.\n  Note: times in the message may be out of order — extract \n  as-is, do not reorder.\n\n- category: classify into exactly one of:\n  Finance, Procurement, Inventory, Operations, \n  Customer Service, Technical/Field, Internal, Admin\n\n- description: clean and concise activity description.\n  Fix obvious typos (e.g., \"fowllowed\" → \"followed\").\n  Do NOT repeat names already captured in the customer field.\n\n- customer: ALWAYS extract any person, company, team, or \n  department connected to the activity — including:\n    • complainants:  \"complaint from X\"  → X\n    • recipients:    \"informed X\"        → X\n    • payers/payees: \"payment from X\"    → X\n    • suppliers, vendors, stakeholders\n    • internal teams: \"DT Team\", \"Finance\", \"Call Center\"\n  If multiple, join with \" / \"\n  Use empty string ONLY if the activity is purely internal \n  with absolutely no external person or team involved.\n\n- status: one of: Completed, In Progress, Pending\n    • Completed  → past tense, fully done\n    • In Progress → ongoing, following up, waiting for reply\n    • Pending    → blocked, not yet started, awaiting approval\n\n- remarks: Infer logical follow-up context based on status \n  and action. Guidelines:\n    • If explicitly stated in message → always include\n      (e.g., \"not found yet\", \"to settle tomorrow\")\n    • For Pending items → note what is being waited for\n      (e.g., informed DT Team + Pending → \"Awaiting DT response\")\n    • For In Progress follow-ups → note the expected outcome\n      (e.g., \"followed up payment to settle tomorrow\" \n       → \"Payment to be settled tomorrow\")\n    • For Completed routine tasks with no extra context \n      → use empty string"
+              },
+              {
+                "content": "=Employee: {{ $json.employeeName }}\nDate: {{ $json.reportDate }}\nMessage:\n{{ $json.rawMessage }}"
+              }
+            ]
+          },
+          "builtInTools": {},
+          "options": {
+            "temperature": 0
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 2.3,
+        "position": [
+          -1600,
+          272
+        ],
+        "id": "c2b562f9-fa1f-417c-9da9-64a15952d359",
+        "name": "Message a model",
+        "credentials": {
+          "openAiApi": {
+            "id": "ctUYBPugmcpbPVwm",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a52f1a25-dbbe-4628-8650-82ec66bebf24",
+                "name": "employeeName",
+                "value": "={{ $json.from.user.displayName }}",
+                "type": "string"
+              },
+              {
+                "id": "970b8b4e-9654-43a1-a7d2-092bce6cd3e1",
+                "name": "rawMessage",
+                "value": "={{ $json.body.content.replace(/(<([^>]+)>)/gi, \"\") }}",
+                "type": "string"
+              },
+              {
+                "id": "39dd8be6-7aa1-4c60-a436-56384cdfa8d3",
+                "name": "reportDate",
+                "value": "={{ $json.createdDateTime }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1904,
+          272
+        ],
+        "id": "bc3e065f-66ce-4ff1-84f4-6d236dde47f5",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "resource": "item",
+          "site": {
+            "__rl": true,
+            "value": "agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2",
+            "mode": "list",
+            "cachedResultName": "Procurement & Logistics"
+          },
+          "list": {
+            "__rl": true,
+            "value": "9829de94-6e38-4930-a5e8-3646e727b408",
+            "mode": "list",
+            "cachedResultName": "Documents"
+          },
+          "returnAll": true,
+          "options": {
+            "fields": [
+              "contentType",
+              "fields",
+              "id",
+              "parentReference",
+              "webUrl"
+            ]
+          },
+          "simplify": false,
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.microsoftSharePoint",
+        "typeVersion": 1,
+        "position": [
+          -1056,
+          272
+        ],
+        "id": "fb9b4c4d-3f70-48ef-b79b-d049181d0a7a",
+        "name": "Get many items1",
+        "credentials": {
+          "microsoftSharePointOAuth2Api": {
+            "id": "bRUq4dRUQmBuFdLH",
+            "name": "AutomationMSSharepoint"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $json.id }}?expand=driveItem",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "microsoftExcelOAuth2Api",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          -560,
+          272
+        ],
+        "id": "9a133f8f-069a-4df7-a5d2-7ec6b40a7e8c",
+        "name": "Get Driven Item ID",
+        "credentials": {
+          "microsoftSharePointOAuth2Api": {
+            "id": "wrvgsKxBcbyxQpbV",
+            "name": "Microsoft SharePoint account"
+          },
+          "microsoftExcelOAuth2Api": {
+            "id": "aWtHVmrLgxw0hGlF",
+            "name": "Automation Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $('Get Driven Item ID').first().json.id }}/driveItem/workbook/worksheets('All Activities')",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "microsoftExcelOAuth2Api",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          336,
+          368
+        ],
+        "id": "5eb0b2fc-09f1-455c-a587-a34188b16205",
+        "name": "Get Sheet ID",
+        "credentials": {
+          "microsoftExcelOAuth2Api": {
+            "id": "aWtHVmrLgxw0hGlF",
+            "name": "Automation Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $('Get Driven Item ID').first().json.id }}/driveItem/workbook/worksheets('All Activities')/tables('Activity')",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "microsoftExcelOAuth2Api",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          672,
+          368
+        ],
+        "id": "c84879ec-0956-45a7-955d-c70acb8c1fe0",
+        "name": "Get Table ID",
+        "alwaysOutputData": false,
+        "credentials": {
+          "microsoftExcelOAuth2Api": {
+            "id": "aWtHVmrLgxw0hGlF",
+            "name": "Automation Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $('Get Driven Item ID').first().json.id }}/driveItem/workbook/worksheets('{{ $('Get Sheet Name').first().json.sheetName }}')/range(address='C6:D56')",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "microsoftExcelOAuth2Api",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          304,
+          0
+        ],
+        "id": "689df515-1561-4bba-a744-2ed08d3501d7",
+        "name": "Read Monthly Summary",
+        "credentials": {
+          "microsoftExcelOAuth2Api": {
+            "id": "aWtHVmrLgxw0hGlF",
+            "name": "Automation Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $('Get Driven Item ID').first().json.id }}/driveItem/workbook/worksheets('All Activities')/tables('Activity')/rows/add",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "microsoftExcelOAuth2Api",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"values\": [[\n    \"{{ $json.date }}\",\n    \"{{ $json.employee }}\",\n    \"{{ $json.time }}\",\n    \"{{ $json.category }}\",\n    \"{{ $json.description }}\",\n    \"{{ $json.customer }}\",\n    \"{{ $json.status }}\",\n    \"{{ $json.remarks }}\"\n  ]]\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1312,
+          368
+        ],
+        "id": "071ec705-5bd8-4a6a-8933-04246ec5ab3b",
+        "name": "Append rows to table3",
+        "alwaysOutputData": false,
+        "credentials": {
+          "microsoftExcelOAuth2Api": {
+            "id": "aWtHVmrLgxw0hGlF",
+            "name": "Automation Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://graph.microsoft.com/v1.0/sites/agbcom.sharepoint.com,95ea9ac0-7ec4-4b16-9ddd-d0c02e297a41,911e88ac-fffc-408c-b181-e9aeb2775ba2/lists/9829de94-6e38-4930-a5e8-3646e727b408/items/{{ $('Get Driven Item ID').first().json.id }}/driveItem/workbook/tables('{{ $('Get Sheet Name').first().json.sheetName }}')/rows/add",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "microsoftExcelOAuth2Api",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"values\": [[\n    null,\n    \"{{ $json.date }}\",\n    \"{{ $json.employee }}\",\n    null, null, null, null, null\n  ]]\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1584,
+          176
+        ],
+        "id": "9bd9ffe7-02e4-408d-a92a-c439d80d76f5",
+        "name": "Monthly Summary Table1",
+        "credentials": {
+          "microsoftExcelOAuth2Api": {
+            "id": "aWtHVmrLgxw0hGlF",
+            "name": "Automation Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const values = $input.first().json.values;\n\n// All rows are data rows (no header in range C6:D56)\nreturn values.map(row => ({\n  json: {\n    Date: row[0],\n    Employee: row[1]\n  }\n}));"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          560,
+          0
+        ],
+        "id": "7ccbb560-0a05-4704-a33b-bb438c4f44bd",
+        "name": "Transform Code Node"
+      },
+      {
+        "parameters": {
+          "jsCode": "const date = $('Parse JSON Response').first().json.date;\nconst month = date.split('-')[1]; \n\nconst monthMap = {\n  'Jan': 'January', 'Feb': 'February', 'Mar': 'March',\n  'Apr': 'April',   'May': 'May',      'Jun': 'June',\n  'Jul': 'July',    'Aug': 'August',   'Sep': 'September',\n  'Oct': 'October', 'Nov': 'November', 'Dec': 'December'\n};\n\nconst fullMonth = monthMap[month] || month;\n\n// Now both are the same: No Spacing\nconst sheetName = fullMonth + 'MonthlySummary'; \nconst tableName = fullMonth + 'MonthlySummary'; \n\nreturn [{ json: { sheetName, tableName } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "70e16b6c-8101-4b17-bf04-356a48df773b",
+        "name": "Get Sheet Name"
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $('Parse JSON Response').all();\nconst loopIndex = $('Loop Activities').context?.currentRunIndex ?? 0;\nconst item = items[loopIndex]?.json;\n\nif (!item) {\n  return [{ json: { error: 'No item found at index ' + loopIndex } }];\n}\n\nreturn [{\n  json: {\n    date: item.date,\n    employee: item.employee,\n    time: item.time,\n    category: item.category,\n    description: item.description,\n    customer: item.customer || \"\",\n    status: item.status,\n    remarks: item.remarks\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          976,
+          368
+        ],
+        "id": "c829438c-f06c-4aa6-a3c8-a468dd893df5",
+        "name": "Name Transfer Route"
+      },
+      {
+        "parameters": {
+          "resource": "channelMessage",
+          "operation": "getAll",
+          "teamId": {
+            "__rl": true,
+            "value": "1472455c-1639-4c21-a4b8-dc5d0a5c71e9",
+            "mode": "list",
+            "cachedResultName": "Procurement & Logistics"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "19:6361f5d322864d6e9e5780310b72da6c@thread.tacv2",
+            "mode": "list",
+            "cachedResultName": "DailyReport",
+            "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A6361f5d322864d6e9e5780310b72da6c%40thread.tacv2/DailyReport?groupId=1472455c-1639-4c21-a4b8-dc5d0a5c71e9&tenantId=dc60f70a-bd29-4a9e-a6bb-faf5b3b8fc3f&allowXTenantAccess=False"
+          },
+          "returnAll": true
+        },
+        "type": "n8n-nodes-base.microsoftTeams",
+        "typeVersion": 2,
+        "position": [
+          -2448,
+          272
+        ],
+        "id": "2853d5d2-73a2-45e2-945a-22401d65966d",
+        "name": "Get many messages",
+        "webhookId": "be0f23c9-c3f4-45c9-80d4-622169d3c1c0",
+        "credentials": {
+          "microsoftTeamsOAuth2Api": {
+            "id": "mp7wxiJvWU4dqRu5",
+            "name": "AutomationMSTeam"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "abd44253-fc15-458f-a94a-24d338e4df44",
+                "leftValue": "={{ $json.id }}",
+                "rightValue": "={{ $('Procurement and Logistics Team Chat').first().json.id }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          -2192,
+          272
+        ],
+        "id": "df3fe1cd-72f2-4710-a09e-90bcc23e31e0",
+        "name": "Filter MessageID"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "f67a1da2-d44a-4805-9c8f-3c39f422e85f",
+                "leftValue": "={{ $json.webUrl }}",
+                "rightValue": "=P%26LDailyReportFile.xlsx",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          -816,
+          272
+        ],
+        "id": "e36ed247-2566-408a-bc90-216537d841d5",
+        "name": "Filter WebURL"
+      },
+      {
+        "parameters": {
+          "teamId": {
+            "__rl": true,
+            "value": "1472455c-1639-4c21-a4b8-dc5d0a5c71e9",
+            "mode": "list",
+            "cachedResultName": "Procurement & Logistics"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "19:6361f5d322864d6e9e5780310b72da6c@thread.tacv2",
+            "mode": "list",
+            "cachedResultName": "DailyReport",
+            "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A6361f5d322864d6e9e5780310b72da6c%40thread.tacv2/DailyReport?groupId=1472455c-1639-4c21-a4b8-dc5d0a5c71e9&tenantId=dc60f70a-bd29-4a9e-a6bb-faf5b3b8fc3f&allowXTenantAccess=False"
+          }
+        },
+        "type": "n8n-nodes-base.microsoftTeamsTrigger",
+        "typeVersion": 1,
+        "position": [
+          -2784,
+          272
+        ],
+        "id": "13810899-d263-4d07-89d1-fd1aac5ba97b",
+        "name": "Procurement and Logistics Team Chat",
+        "webhookId": "9cd6a4b5-3792-4a07-a695-f94b343d7b64",
+        "credentials": {
+          "microsoftTeamsOAuth2Api": {
+            "id": "mp7wxiJvWU4dqRu5",
+            "name": "AutomationMSTeam"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Is New Combo?": {
+        "main": [
+          [
+            {
+              "node": "Monthly Summary Table1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check If Combo Exists": {
+        "main": [
+          [
+            {
+              "node": "Is New Combo?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Activities": {
+        "main": [
+          [
+            {
+              "node": "Get Sheet Name",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get Sheet ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse JSON Response": {
+        "main": [
+          [
+            {
+              "node": "Get many items1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Message a model": {
+        "main": [
+          [
+            {
+              "node": "Parse JSON Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Message a model",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get many items1": {
+        "main": [
+          [
+            {
+              "node": "Filter WebURL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Driven Item ID": {
+        "main": [
+          [
+            {
+              "node": "Loop Activities",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Sheet ID": {
+        "main": [
+          [
+            {
+              "node": "Get Table ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Table ID": {
+        "main": [
+          [
+            {
+              "node": "Name Transfer Route",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Monthly Summary": {
+        "main": [
+          [
+            {
+              "node": "Transform Code Node",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Append rows to table3": {
+        "main": [
+          [
+            {
+              "node": "Loop Activities",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Transform Code Node": {
+        "main": [
+          [
+            {
+              "node": "Check If Combo Exists",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Sheet Name": {
+        "main": [
+          [
+            {
+              "node": "Read Monthly Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Name Transfer Route": {
+        "main": [
+          [
+            {
+              "node": "Append rows to table3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get many messages": {
+        "main": [
+          [
+            {
+              "node": "Filter MessageID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter MessageID": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter WebURL": {
+        "main": [
+          [
+            {
+              "node": "Get Driven Item ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Procurement and Logistics Team Chat": {
+        "main": [
+          [
+            {
+              "node": "Get many messages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "admin admin",
+    "name": "Version d05252ba",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
