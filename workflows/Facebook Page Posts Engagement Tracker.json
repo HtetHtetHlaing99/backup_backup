@@ -1,0 +1,864 @@
+{
+  "updatedAt": "2026-02-27T03:45:57.187Z",
+  "createdAt": "2026-02-27T03:45:49.734Z",
+  "id": "CtfL7pUIYMrgTzvm",
+  "name": "Facebook Page Posts Engagement Tracker",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1d5506ef-49b1-4852-b2cd-b9e8ede68940",
+      "name": "When clicking ‘Execute workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        400,
+        1040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "id": "633e0af7-05ce-4005-bf25-0245d3a36296",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1376,
+        1040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "180db35d-cb37-4570-88ab-5eff49a50c00",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        1696,
+        720
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b27f08ae-3eaf-4b9b-bf93-fdcb25ba99bf",
+      "name": "Loop Over Items1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        1696,
+        1040
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "cde4adc6-d2e8-4a7e-afeb-8c28a477a950",
+      "name": "Loop Over Items2",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        1696,
+        1408
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {},
+      "id": "67995f52-e55b-490c-b799-6cf9ec9b3a2f",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2432,
+        736
+      ],
+      "webhookId": "4a5f8f37-94bc-4af2-a11e-29b2d3068a3c",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {},
+      "id": "80d1915c-eebb-4d55-b4f2-1c33654ca7e7",
+      "name": "Wait1",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2432,
+        1056
+      ],
+      "webhookId": "64583860-c86c-42de-b31e-2d2f5cf897e6",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {},
+      "id": "7ca1bc3f-a556-4e2c-84b6-299b1e454f0c",
+      "name": "Wait2",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2416,
+        1424
+      ],
+      "webhookId": "4a103e2a-a066-4a41-a4a6-819584638ad7",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2e0b493d-87f3-443f-9b30-6a9d69fd9c2f",
+              "name": "max_post",
+              "type": "string",
+              "value": "3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4761767e-494c-4da4-b065-15b7c30f2a56",
+      "name": "Set Max Posts",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        688,
+        1040
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "graphApiVersion": "v21.0",
+        "node": "me",
+        "options": {}
+      },
+      "id": "fc8b8238-3a3b-423e-9683-9c0f84edca7f",
+      "name": "Get Page Info",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        992,
+        1040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "graphApiVersion": "v21.0",
+        "node": "={{ $json.id }}/feed",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "limit",
+                "value": "={{ $('Set Max Posts').item.json.max_post }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "d9e2f6a7-5fb2-4852-94e5-f2d1e4951173",
+      "name": "Get Page Feed",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        1168,
+        1040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "graphApiVersion": "v21.0",
+        "node": "={{ $json.id }}",
+        "edge": "comments",
+        "options": {
+          "fields": {
+            "field": [
+              {
+                "name": "id,from,message,created_time,comments"
+              }
+            ]
+          },
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "order",
+                "value": "reverse_chronological"
+              },
+              {
+                "name": "summary",
+                "value": "true"
+              },
+              {
+                "name": "filter",
+                "value": "stream"
+              }
+            ]
+          }
+        }
+      },
+      "id": "eef07381-bf89-4621-aac8-3d1b89fc8890",
+      "name": "Get comments",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        1968,
+        736
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "graphApiVersion": "v21.0",
+        "node": "={{ $json.id }}",
+        "edge": "reactions",
+        "options": {
+          "fields": {
+            "field": [
+              {
+                "name": "type"
+              }
+            ]
+          },
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "order",
+                "value": "reverse_chronological"
+              },
+              {
+                "name": "summary",
+                "value": "true"
+              }
+            ]
+          }
+        }
+      },
+      "id": "cb630bd8-a83c-473b-bc7a-e2b775e947a0",
+      "name": "Get Likes",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        1968,
+        1056
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "graphApiVersion": "v21.0",
+        "node": "={{ $json.id }}",
+        "options": {
+          "fields": {
+            "field": [
+              {
+                "name": "id,message,created_time,shares"
+              }
+            ]
+          },
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "order",
+                "value": "reverse_chronological"
+              }
+            ]
+          }
+        }
+      },
+      "id": "b38a72a0-0809-43bb-8b07-2eccb94a5f5f",
+      "name": "Get Shares",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        1952,
+        1424
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1tZgsygFZ4xXNJ-CYWzib9zlaw6ZH2AHS8JoAjlvY65A",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tZgsygFZ4xXNJ-CYWzib9zlaw6ZH2AHS8JoAjlvY65A/edit?usp=drivesdk",
+          "cachedResultName": "Count Facebook Engagement"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tZgsygFZ4xXNJ-CYWzib9zlaw6ZH2AHS8JoAjlvY65A/edit#gid=0",
+          "cachedResultName": "Foglio1"
+        },
+        "columns": {
+          "value": {
+            "LIKES": "={{ $json.summary.total_count }}",
+            "POST ID": "={{ $('Loop Over Items1').item.json.id }}"
+          },
+          "schema": [
+            {
+              "id": "POST ID",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "POST ID",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "POST",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "POST",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LIKES",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "LIKES",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "COMMENTS",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "COMMENTS",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SHARES",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "SHARES",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "POST ID"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c2b8a7ae-8961-42ab-86e3-4fd05824d211",
+      "name": "Add n. likes",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2224,
+        1056
+      ],
+      "typeVersion": 4.7
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1tZgsygFZ4xXNJ-CYWzib9zlaw6ZH2AHS8JoAjlvY65A",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tZgsygFZ4xXNJ-CYWzib9zlaw6ZH2AHS8JoAjlvY65A/edit?usp=drivesdk",
+          "cachedResultName": "Count Facebook Engagement"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tZgsygFZ4xXNJ-CYWzib9zlaw6ZH2AHS8JoAjlvY65A/edit#gid=0",
+          "cachedResultName": "Foglio1"
+        },
+        "columns": {
+          "value": {
+            "POST": "={{ $('Loop Over Items').item.json.message }}",
+            "POST ID": "={{ $('Loop Over Items').item.json.id }}",
+            "COMMENTS": "={{ $json.summary.total_count }}"
+          },
+          "schema": [
+            {
+              "id": "POST ID",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "POST ID",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "POST",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "POST",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LIKES",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "LIKES",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "COMMENTS",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "COMMENTS",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SHARES",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "SHARES",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "POST ID"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "0d33d746-9bf4-44e3-a6d8-e291550fc05b",
+      "name": "Add n. comments",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2224,
+        736
+      ],
+      "typeVersion": 4.7
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1tZgsygFZ4xXNJ-CYWzib9zlaw6ZH2AHS8JoAjlvY65A",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tZgsygFZ4xXNJ-CYWzib9zlaw6ZH2AHS8JoAjlvY65A/edit?usp=drivesdk",
+          "cachedResultName": "Count Facebook Engagement"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tZgsygFZ4xXNJ-CYWzib9zlaw6ZH2AHS8JoAjlvY65A/edit#gid=0",
+          "cachedResultName": "Foglio1"
+        },
+        "columns": {
+          "value": {
+            "SHARES": "={{ $json.shares.count }}",
+            "POST ID": "={{ $('Loop Over Items2').item.json.id }}"
+          },
+          "schema": [
+            {
+              "id": "POST ID",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "POST ID",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "POST",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "POST",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LIKES",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "LIKES",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "COMMENTS",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "COMMENTS",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SHARES",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "SHARES",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "POST ID"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "0507680c-cfcd-4965-a0f3-c9847a44d22e",
+      "name": "Add n. shares",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2208,
+        1424
+      ],
+      "typeVersion": 4.7
+    },
+    {
+      "parameters": {
+        "content": "## Facebook Page Posts Engagement Tracker Automation with Google Sheets\n\nThis workflow automatically **retrieves engagement data (likes, comments, and shares) from a Facebook Page** and stores the results in a Google Sheets document for reporting and analysis\n\n\nThis workflow is particularly useful for:\n\n* Social Media Managers\n* Marketing Agencies\n* Performance Analysts\n* Client reporting automation\n\nIt provides a lightweight but powerful engagement monitoring system without requiring expensive analytics tools.\n\n### **How it works:**\n\nThe workflow is manually triggered and starts by defining a maximum number of Facebook posts to analyze. It retrieves page details and feed data via the Facebook Graph API, then splits the feed into individual post items. Three parallel branches process comments, reactions (likes), and shares separately, making dedicated API calls for each metric with summary data.\n\nEach branch writes results to Google Sheets using POST ID as a unique key to append or update rows without duplication. Wait nodes are placed after Google Sheets operations to reduce the risk of hitting API rate limits. This modular structure ensures scalable, maintainable engagement tracking with structured data storage.\n\n\n### **Setup steps:**\n\nConfigure a Facebook Graph API credential in n8n using an access token from the Graph API Explorer, ensuring your page ID is accessible via the appropriate endpoint. Clone the provided Google Sheet or create one with required columns (POST ID, POST, LIKES, COMMENTS, SHARES), then set up Google Sheets OAuth2 credentials in n8n.\n\nAdjust the `max_post` value in the Set node to control how many posts are analyzed, and update the spreadsheet ID if needed. Test the workflow manually to verify API connectivity and data accuracy. Optionally, replace the manual trigger with a Schedule Trigger node to automate regular engagement tracking.\n",
+        "height": 848,
+        "width": 752
+      },
+      "id": "1e7faf40-4a93-4d2e-9c4f-812a4c2b2ad5",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        592,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 1 - Set Max Posts\n\nSet number max posts to analyze",
+        "height": 320,
+        "width": 288,
+        "color": 7
+      },
+      "id": "3f8cdeca-d295-4c4f-bf11-e83b5af72be4",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        592,
+        912
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 2 - Obtain Access Token\n\nGet a temporary [access token](https://developers.facebook.com/tools/explorer/) for your Facebook Page\n",
+        "height": 320,
+        "width": 432,
+        "color": 7
+      },
+      "id": "f3abd7c8-354b-4141-a564-529cc91f153f",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        912,
+        912
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 3- Get Facebook Comments",
+        "height": 336,
+        "width": 960,
+        "color": 7
+      },
+      "id": "9d25a05f-9ce1-4e4b-bd05-d54959340ebd",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1632,
+        624
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 4- Get Facebook Likes",
+        "height": 288,
+        "width": 960,
+        "color": 7
+      },
+      "id": "7353a099-34d5-41f9-b1b6-c5d72da88b9c",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1632,
+        992
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 5 - Get Facebook Shares",
+        "height": 336,
+        "width": 960,
+        "color": 7
+      },
+      "id": "723a7851-4a00-4b39-b9fe-dc31c6471718",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1632,
+        1328
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Likes": {
+      "main": [
+        [
+          {
+            "node": "Add n. likes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Shares": {
+      "main": [
+        [
+          {
+            "node": "Add n. shares",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add n. likes": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get comments": {
+      "main": [
+        [
+          {
+            "node": "Add n. comments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add n. shares": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Page Feed": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Page Info": {
+      "main": [
+        [
+          {
+            "node": "Get Page Feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Max Posts": {
+      "main": [
+        [
+          {
+            "node": "Get Page Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add n. comments": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get comments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get Likes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get Shares",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set Max Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "16124a37-0392-4e83-87cd-f716067a68c3",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-27T03:45:49.734Z",
+      "createdAt": "2026-02-27T03:45:49.734Z",
+      "role": "workflow:owner",
+      "workflowId": "CtfL7pUIYMrgTzvm",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
