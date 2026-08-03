@@ -1,0 +1,498 @@
+{
+  "updatedAt": "2026-05-14T03:06:09.188Z",
+  "createdAt": "2026-05-12T08:42:37.440Z",
+  "id": "lWgSMSZ9Dqu8v0JG",
+  "name": "TeamMessageExtract Daily Report Workflow Test Phase",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "upsert",
+        "workbook": {
+          "__rl": true,
+          "value": "01EUCK3CGOACB5BXZBWZBLUJI2AIQB4XV6",
+          "mode": "list",
+          "cachedResultName": "DailyReport_AllData (3)",
+          "cachedResultUrl": "https://agbcom-my.sharepoint.com/personal/htethtethlaing_agbcommunication_com/_layouts/15/Doc.aspx?sourcedoc=%7BD08300CE-21DF-42B6-BA25-1A02201E5EBE%7D&file=DailyReport_AllData%20(3).xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0100-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Monthly Summary",
+          "cachedResultUrl": "https://agbcom-my.sharepoint.com/personal/htethtethlaing_agbcommunication_com/_layouts/15/Doc.aspx?sourcedoc=%7BD08300CE-21DF-42B6-BA25-1A02201E5EBE%7D&file=DailyReport_AllData%20(3).xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Monthly%20Summary!A1"
+        },
+        "dataMode": "autoMap",
+        "columnToMatchOn": "MONTHLY SUMMARY — Auto-Expanding",
+        "options": {}
+      },
+      "id": "d40074c5-5b4b-4b68-ac69-68cd6af0c72b",
+      "name": "Write Date to Summary",
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        10624,
+        512
+      ],
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "Xvfws4OVH2OzZxfG",
+          "name": "Microsoft Excel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-skip",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2cae33a3-ed51-44f2-bcd3-aae5574daef5",
+      "name": "Is New Combo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        10336,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the incoming activity date+employee from the loop context\n// $('Append rows to table').first() has the activity that was just written\nconst actDate = $('Parse JSON Response').first().json.date;       // e.g. \"05-May-2026\"\nconst actEmp  = $('Parse JSON Response').first().json.employee;   // e.g. \"Saw Yu San\"\n\n// Rows read from Monthly Summary C8:D57\n// Each row = { C: dateValue, D: employeeValue }\nconst summaryRows = $input.all().map(r => r.json);\n\n// Normalise date for comparison: strip time portion if datetime string\nfunction normDate(d) {\n  if (!d) return '';\n  // If it looks like ISO datetime, take date part only\n  return String(d).split('T')[0].toLowerCase().trim();\n}\n\n// Also normalise the incoming actDate (could be \"05-May-2026\" or \"2026-05-06\")\nconst normAct = normDate(actDate);\n\n// Find first blank row index (0-based within C8:D57 → Excel row = index + 8)\nlet blankRowIndex = -1;\nlet alreadyExists = false;\n\nfor (let i = 0; i < summaryRows.length; i++) {\n  const rowDate = normDate(summaryRows[i]['C'] || summaryRows[i]['column_0'] || '');\n  const rowEmp  = String(summaryRows[i]['D'] || summaryRows[i]['column_1'] || '').toLowerCase().trim();\n  const actEmpNorm = actEmp.toLowerCase().trim();\n\n  if (rowDate && rowEmp) {\n    // Row is populated — check if it matches\n    if ((rowDate === normAct || rowDate.includes(normAct) || normAct.includes(rowDate)) && rowEmp === actEmpNorm) {\n      alreadyExists = true;\n      break;\n    }\n  } else if (!rowDate && !rowEmp && blankRowIndex === -1) {\n    // First blank row found\n    blankRowIndex = i;\n  }\n}\n\nif (alreadyExists) {\n  // Return empty → IF node will skip the write\n  return [{ json: { skip: true, reason: 'Combo already exists in Monthly Summary' } }];\n}\n\nif (blankRowIndex === -1) {\n  return [{ json: { skip: true, reason: 'No blank rows left in Monthly Summary — extend the sheet' } }];\n}\n\n// Excel row number for this blank slot (data starts at row 8)\nconst excelRow = blankRowIndex + 8;\n\nreturn [{\n  json: {\n    skip: false,\n    excelRow,\n    date: actDate,\n    employee: actEmp,\n    dateCell: \\`C\\${excelRow}\\`,\n    employeeCell: \\`D\\${excelRow}\\`\n  }\n}];"
+      },
+      "id": "58323d2d-3044-4c98-bfa7-d6c76e902a35",
+      "name": "Check If Combo Exists",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        10064,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "readRows",
+        "workbook": {
+          "__rl": true,
+          "value": "01EUCK3CGOACB5BXZBWZBLUJI2AIQB4XV6",
+          "mode": "list",
+          "cachedResultName": "DailyReport_AllData (3)",
+          "cachedResultUrl": "https://agbcom-my.sharepoint.com/personal/htethtethlaing_agbcommunication_com/_layouts/15/Doc.aspx?sourcedoc=%7BD08300CE-21DF-42B6-BA25-1A02201E5EBE%7D&file=DailyReport_AllData%20(3).xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0100-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Monthly Summary",
+          "cachedResultUrl": "https://agbcom-my.sharepoint.com/personal/htethtethlaing_agbcommunication_com/_layouts/15/Doc.aspx?sourcedoc=%7BD08300CE-21DF-42B6-BA25-1A02201E5EBE%7D&file=DailyReport_AllData%20(3).xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Monthly%20Summary!A1"
+        },
+        "useRange": true,
+        "range": "=C8:D57",
+        "options": {}
+      },
+      "id": "b0622ace-49fe-4451-9c6b-a11d12fe3bac",
+      "name": "Read Monthly Summary Rows",
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        9776,
+        448
+      ],
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "Xvfws4OVH2OzZxfG",
+          "name": "Microsoft Excel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "workbook": {
+          "__rl": true,
+          "value": "01EUCK3CFJKZYJRWFYYFCZD6NPJB2JBHV6",
+          "mode": "list",
+          "cachedResultName": "DailyReport_AllData (3)",
+          "cachedResultUrl": "https://agbcom-my.sharepoint.com/personal/htethtethlaing_agbcommunication_com/_layouts/15/Doc.aspx?sourcedoc=%7B987056A9-B8D8-45C1-91F9-AF4874909EBE%7D&file=DailyReport_AllData%20(3).xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "All Activities",
+          "cachedResultUrl": "https://agbcom-my.sharepoint.com/personal/htethtethlaing_agbcommunication_com/_layouts/15/Doc.aspx?sourcedoc=%7B987056A9-B8D8-45C1-91F9-AF4874909EBE%7D&file=DailyReport_AllData%20(3).xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=All%20Activities!A1"
+        },
+        "table": {
+          "__rl": true,
+          "value": "{9077E8D3-8621-4B4A-8DAE-05A0E21817B3}",
+          "mode": "list",
+          "cachedResultName": "Activity",
+          "cachedResultUrl": "https://agbcom-my.sharepoint.com/personal/htethtethlaing_agbcommunication_com/_layouts/15/Doc.aspx?sourcedoc=%7B987056A9-B8D8-45C1-91F9-AF4874909EBE%7D&file=DailyReport_AllData%20(3).xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell='All%20Activities'!B6:I7"
+        },
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "Date",
+              "fieldValue": "={{ $json.date }}"
+            },
+            {
+              "column": "Employee",
+              "fieldValue": "={{ $json.employee }}"
+            },
+            {
+              "column": "Time",
+              "fieldValue": "={{ $json.time }}"
+            },
+            {
+              "column": "Category",
+              "fieldValue": "={{ $json.category }}"
+            },
+            {
+              "column": "Task / Activity Description",
+              "fieldValue": "={{ $json.description }}"
+            },
+            {
+              "column": "Customer / Stakeholder",
+              "fieldValue": "={{ $json.customer }}"
+            },
+            {
+              "column": "Status",
+              "fieldValue": "={{ $json.status }}"
+            },
+            {
+              "column": "Remarks",
+              "fieldValue": "={{ $json.remarks }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        9504,
+        448
+      ],
+      "id": "ac0a5619-066c-4ed6-9076-27e99a456618",
+      "name": "Append rows to table",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "Xvfws4OVH2OzZxfG",
+          "name": "Microsoft Excel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        9184,
+        304
+      ],
+      "id": "17315aa5-68cc-4d6f-bea6-a35bd055644f",
+      "name": "Loop Activities"
+    },
+    {
+      "parameters": {
+        "jsCode": "// OpenAI ရဲ့ content list ထဲက text ကို အဆင့်ဆင့် ရှာယူပါတယ်\nconst content = $input.first().json.output[0].content;\nconst textItem = content.find(item => item.type === 'output_text');\nconst text = textItem ? textItem.text : \"\";\n\nif (!text) {\n  throw new Error(\"AI ဆီက စာသားရှာမတွေ့ပါဘူး။ OpenAI node settings ကို ပြန်စစ်ပေးပါ။\");\n}\n\n// Markdown formatting တွေကို ရှင်းထုတ်ပါတယ်\nconst cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();\n\n// JSON Array အဖြစ် ပြောင်းလဲပါတယ်\nconst activities = JSON.parse(cleaned);\n\n// Row တစ်ခုချင်းစီ ခွဲထုတ်ပေးပါတယ်\nreturn activities.map(a => ({ json: a }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8912,
+        304
+      ],
+      "id": "283ba6eb-1552-4a2a-a59e-cff10e77c7c5",
+      "name": "Parse JSON Response"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are a data extraction assistant. Extract each timestamped activity \nfrom a daily report message into a JSON array. Return ONLY valid JSON \narray with no explanation, no markdown, no code fences.\n\nIMPORTANT: Be thorough and consistent. Process every single timestamped \nactivity — do not skip any. Read the full message before extracting.\n\nEach object must have exactly these keys:\n\n- date: report date as DD-MM-YYYY (05-May_2026)\n\n- employee: employee name provided above the message\n\n- time: format as H:MM AM/PM (e.g., 8:45 AM, 1:15 PM)\n  Use empty string if no time is stated.\n  Note: times in the message may be out of order — extract \n  as-is, do not reorder.\n\n- category: classify into exactly one of:\n  Finance, Procurement, Inventory, Operations, \n  Customer Service, Technical/Field, Internal, Admin\n\n- description: clean and concise activity description.\n  Fix obvious typos (e.g., \"fowllowed\" → \"followed\").\n  Do NOT repeat names already captured in the customer field.\n\n- customer: ALWAYS extract any person, company, team, or \n  department connected to the activity — including:\n    • complainants:  \"complaint from X\"  → X\n    • recipients:    \"informed X\"        → X\n    • payers/payees: \"payment from X\"    → X\n    • suppliers, vendors, stakeholders\n    • internal teams: \"DT Team\", \"Finance\", \"Call Center\"\n  If multiple, join with \" / \"\n  Use empty string ONLY if the activity is purely internal \n  with absolutely no external person or team involved.\n\n- status: one of: Completed, In Progress, Pending\n    • Completed  → past tense, fully done\n    • In Progress → ongoing, following up, waiting for reply\n    • Pending    → blocked, not yet started, awaiting approval\n\n- remarks: Infer logical follow-up context based on status \n  and action. Guidelines:\n    • If explicitly stated in message → always include\n      (e.g., \"not found yet\", \"to settle tomorrow\")\n    • For Pending items → note what is being waited for\n      (e.g., informed DT Team + Pending → \"Awaiting DT response\")\n    • For In Progress follow-ups → note the expected outcome\n      (e.g., \"followed up payment to settle tomorrow\" \n       → \"Payment to be settled tomorrow\")\n    • For Completed routine tasks with no extra context \n      → use empty string"
+            },
+            {
+              "content": "=Employee: {{ $json.employeeName }}\nDate: {{ $json.reportDate }}\nMessage:\n{{ $json.rawMessage }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        8512,
+        304
+      ],
+      "id": "1fb22918-2d0f-423f-9ea7-6aba9bb88316",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a52f1a25-dbbe-4628-8650-82ec66bebf24",
+              "name": "employeeName",
+              "value": "={{ $json.from.user.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "970b8b4e-9654-43a1-a7d2-092bce6cd3e1",
+              "name": "rawMessage",
+              "value": "={{ $json.body.content }}",
+              "type": "string"
+            },
+            {
+              "id": "39dd8be6-7aa1-4c60-a436-56384cdfa8d3",
+              "name": "reportDate",
+              "value": "={{ $json.createdDateTime }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        8224,
+        304
+      ],
+      "id": "b1397c98-43f6-4abf-ad43-c04a349ab163",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "operation": "get",
+        "chatId": {
+          "__rl": true,
+          "value": "={{ $json[\"@odata.id\"].split(\"'\")[1] }}",
+          "mode": "id"
+        },
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        8016,
+        304
+      ],
+      "id": "a5e6144c-75dc-4d0c-b8ab-2796cede81f0",
+      "name": "Get chat message",
+      "webhookId": "304c7482-e57b-45a5-ac10-df7d7e4ae452",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "07y1I64RyeSNuqDy",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "event": "newChatMessage",
+        "watchAllChats": true
+      },
+      "type": "n8n-nodes-base.microsoftTeamsTrigger",
+      "typeVersion": 1,
+      "position": [
+        7744,
+        304
+      ],
+      "id": "2c067d1a-d32f-4bcf-8179-7fe2027b348b",
+      "name": "Microsoft Teams Trigger1",
+      "webhookId": "3c91968f-37e3-4393-aac3-b63fce5c9116",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "07y1I64RyeSNuqDy",
+          "name": "Microsoft Teams account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Is New Combo?": {
+      "main": [
+        [
+          {
+            "node": "Write Date to Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Combo Exists": {
+      "main": [
+        [
+          {
+            "node": "Is New Combo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Monthly Summary Rows": {
+      "main": [
+        [
+          {
+            "node": "Check If Combo Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append rows to table": {
+      "main": [
+        [
+          {
+            "node": "Read Monthly Summary Rows",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Activities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Activities": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Append rows to table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON Response": {
+      "main": [
+        [
+          {
+            "node": "Loop Activities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get chat message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Teams Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Get chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "8c704237-fd14-4883-bbe5-ccef40b17912",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-12T08:42:37.440Z",
+      "createdAt": "2026-05-12T08:42:37.440Z",
+      "role": "workflow:owner",
+      "workflowId": "lWgSMSZ9Dqu8v0JG",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
