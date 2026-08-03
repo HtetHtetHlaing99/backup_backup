@@ -1,0 +1,238 @@
+{
+  "updatedAt": "2026-02-19T03:00:43.113Z",
+  "createdAt": "2026-02-19T02:50:55.696Z",
+  "id": "XUVtdJveOksCPswk",
+  "name": "n8n Facebook Messenger",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "path": "4baf1270-2f4f-402f-be56-93cf5bcf4d84",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1808,
+        352
+      ],
+      "id": "90f5eb94-cb7e-4ae8-b358-33619f518c2d",
+      "name": "Webhook",
+      "webhookId": "4baf1270-2f4f-402f-be56-93cf5bcf4d84"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cc16e351-9845-47b1-86fc-1d89858338b8",
+              "leftValue": "={{ $json.query['hub.mode'] }}",
+              "rightValue": "subscribe",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "e52e8250-4a3e-4f0a-90a9-38c67e435f66",
+              "leftValue": "={{ $json.query['hub.verify_token'] }}",
+              "rightValue": "aichatbot",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1520,
+        128
+      ],
+      "id": "b3c8fa0a-9d3a-4f00-af0e-34bba81ede20",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -1504,
+        -96
+      ],
+      "id": "fe21e04b-2f61-4640-9f56-82f1712010d7",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/v24.0/{{ $('Webhook').item.json.body.entry[0].messaging[0].message.mid }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "from,to,message"
+            },
+            {
+              "name": "access_token",
+              "value": "=EAAW1KoXx9zcBQUdEtO7Yzf9BRCbE5L9fZBKwmTaGBuFdRV4zUouHr4a8RgOGZCplgXFfcjRYdrgP0OPXeklasZCAx5gftfh1Cw41YLn12L9XsLCzemrPHdZA0BS6cSx9SB3jez0FIdMdJZB8Cj43q73THcyAlvOyzDhJzDvQ9xjZAhAxGki48sQQhQenc7rZBU3w3sZD"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1536,
+        368
+      ],
+      "id": "5d9c2d89-e6a0-4f26-bc67-0869a74662bd",
+      "name": "Get Sender's Name"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "sender_name",
+              "value": "={{ $json.body.from.name }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "message_text",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "page_name",
+              "value": "={{ $json.body.to.data[0].name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8f05fe0e-8c50-4e57-81e5-98e89dfae7a0",
+      "name": "Format Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -992,
+        -64
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://c464bfa2-c835-4573-ac2c-3d901548eefd.mock.pstmn.io/n8n-data",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1216,
+        368
+      ],
+      "id": "4a230503-72c3-4634-9290-5e3ea50ba2e3",
+      "name": "send to postman1"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Sender's Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sender's Name": {
+      "main": [
+        [
+          {
+            "node": "send to postman1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "98450c5e-03f4-4f3a-a1d3-131a5556e8bd",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-19T02:50:55.696Z",
+      "createdAt": "2026-02-19T02:50:55.696Z",
+      "role": "workflow:owner",
+      "workflowId": "XUVtdJveOksCPswk",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
