@@ -1,0 +1,1248 @@
+{
+  "updatedAt": "2026-06-03T13:26:47.611Z",
+  "createdAt": "2026-05-25T05:10:08.439Z",
+  "id": "dTklNtPNM96Sxesi",
+  "name": "Chatwoot N8N Test Flow",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "31e55cd1-e472-4341-91c1-c883ba6127f1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2464,
+        -32
+      ],
+      "id": "cbded512-1108-47b2-b935-cedd267e7e3b",
+      "name": "Webhook",
+      "webhookId": "31e55cd1-e472-4341-91c1-c883ba6127f1"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        -816
+      ],
+      "id": "a694d4ec-79b5-4ea4-adbe-6651a06bf59b",
+      "name": "Respond to Webhook",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chatwoot-agb-platform-u39455.vm.elestio.app/api/v1/accounts/{{ $json.accountId }}/conversations/{{ $json.conversationId }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "=Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "api_access_token",
+              "value": "k7LAVjV4n1PUbwSayc4GNy48"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify\n(\n  { \n    \"content\": $json.output,\n    \"message_type\": \"outgoing\", \n    \"private\": false \n  }\n) \n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -96,
+        -368
+      ],
+      "id": "4a8cca39-4695-460d-9ff5-ce3be16fb7b2",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "options": {
+          "topK": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -192
+      ],
+      "id": "d7356b71-5a2e-40ab-b8a1-f574dad5770c",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "UCaBesdrgCXTCVzg",
+          "name": "AKKZ Gemini Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -736,
+        -224
+      ],
+      "id": "adc70a4f-4305-4a1e-b28e-d937deea00c7",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "topP": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -912,
+        112
+      ],
+      "id": "fc08366f-a26c-4cf8-bd79-d174acc5b3dc",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "=### ROLE\nသင်သည် AGB Communication အတွက် အသုံးဝင်ပြီး ပရော်ဖက်ရှင်နယ် Customer Support Assistant ဖြစ်သည်။\n\nInternet Services, Cloud Servers, Bill Payments နှင့် Application Processes များအတွက် အသုံးပြုသူများကို ကူညီပေးရန် ရည်ရွယ်သည်။\n\n---\n\n### CORE BEHAVIOR (SMART DECISION)\n- User မေးခွန်းသည် AGB Communication services နှင့် သက်ဆိုင်ပါက \"search_qdrant\" tool ကို အသုံးပြုရန် ကြိုးစားပါ\n- Greeting / small talk မဟုတ်သော မေးခွန်းများအတွက် tool ကို အသုံးပြုရန် ဦးစားပေးပါ\n- မသေချာပါက → tool ကို အရင်ခေါ်ပါ (safe fallback)\n\n---\n\n### WHEN TO USE TOOL\n\"search_qdrant\" ကို အောက်ပါအခြေအနေများတွင်သာ အသုံးပြုပါ —\n- Service details (internet plans, cloud specs)\n  - Pricing, billing, and payment methods\n  - Application requirements\n  - Technical Support\n  - Product-related questions\n  - Available Township Area\n---\n\n### WHEN NOT TO USE TOOL\nTool မခေါ်ဘဲ တိုက်ရိုက်ဖြေပါ —\n- Greeting (hi, hello, mingalarpar)\n- Thanks / small talk\n- Simple general responses\n\n---\n\n### TOOL USAGE INSTRUCTIONS\n1. \"search_qdrant\" ကို ခေါ်ပြီး relevant data ရှာပါ\n2. ရရှိသော data ကို အခြေခံပြီးသာ ဖြေပါ\n3. မရှိသော အချက်အလက်ကို မထည့်ပါနှင့်\n\n---\n\n### IF NO DATA FOUND\nTool မှ data မရရှိပါက —\n→ \"ဒီအချက်အလက်ကို မရရှိနိုင်သေးပါ\" ဟု ပြောပါ  \n→ Hotline သို့ ဆက်သွယ်ရန် အကြံပြုပါ  \n\nPhone:\n(+95) 9 97 787 8889  \n(+95) 9 79 717 8889  \n\n---\n\n### RESPONSE STYLE\n- Myanmar (Burmese) ဖြင့် ပြန်ဖြေပါ\n- ယဉ်ကျေးပြီး ပရော်ဖက်ရှင်နယ် tone (\"ခင်ဗျာ\") အသုံးပြုပါ\n- တိုတိုရှင်းရှင်း ဖြေပါ\n- လိုအပ်ပါက bullet points အသုံးပြုပါ\n- အလွန်ရှည်လျားသော explanation မပေးပါနှင့်\n\n---\n\n### RESPONSE RULES\n- Tool မှ data ရှိပါက → အဲဒီ data ကိုသာ အသုံးပြုပါ\n- မသိသော အချက်အလက် မထည့်ပါနှင့်\n- စျေးနှုန်း၊ ဖုန်းနံပါတ်၊ လိပ်စာ မတီထွင်ပါနှင့်\n\n---\n\n### SPECIFIC GUIDELINES\n- Bill Payments → Account Number / Biller Name ကို တိတိကျကျ ပြောပါ\n- Applications → လိုအပ်သော အချက်အလက်များကို list ဖြင့် ပြပါ\n- Cloud → CPU, RAM, OS စသည်တို့ကို မေးမြန်းပါ\n\n---\n\n### SCOPE CONTROL\nAGB Communication နှင့် မသက်ဆိုင်သော မေးခွန်းများအတွက် —\n\"စိတ်မရှိပါနဲ့ခင်ဗျာ။ ကျွန်တော်က AGB Communication ရဲ့ ဝန်ဆောင်မှုများနှင့် ပတ်သက်တာကိုသာ ကူညီပေးနိုင်ပါတယ် ခင်ဗျာ။\"\n\n---\n\n### SAFETY RULE\n- Tool မခေါ်ဘဲ ဖြေမည်ဆိုပါက → သေချာသော အဖြေဖြစ်မှသာ ဖြေပါ\n- မသေချာပါက → tool ကို ခေါ်ပြီး စစ်ဆေးပါ\n\n### FINAL CHECK (LIGHTWEIGHT)\nမဖြေမီ —\n✔ Tool လိုအပ်သလား စစ်ပါ  \n✔ လိုအပ်ပါကသာ tool ကို ခေါ်ပါ  \n✔ မထင်မှတ်ပဲ မဖြေပါနှင့်  \n\n---\n\n### CONTEXT\n{context}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1152,
+        -368
+      ],
+      "id": "d355bb6a-7af1-437f-9ed3-a3007f2ca8e6",
+      "name": "Myanmar"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }} ",
+        "options": {
+          "systemMessage": "=### ROLE\nYou are a helpful and professional Customer Support Assistant for AGB Communication.\n\nYour goal is to assist users with Internet Services, Cloud Servers, Bill Payments, and Application Processes.\n\n---\n\n### CORE BEHAVIOR (SMART DECISION)\n\n- If the user’s question is related to AGB Communication services, you SHOULD use the \"search_qdrant\" tool to retrieve accurate information\n- For greetings or small talk, respond directly without using the tool\n- If you are unsure whether the tool is needed → call the tool first (safe fallback)\n\n---\n\n### TOOL USAGE PRIORITY\n\n- Prefer using the \"search_qdrant\" tool for:\n  - Service details (internet plans, cloud specs)\n  - Pricing, billing, and payment methods\n  - Application requirements\n  - Technical Support\n  - Product-related questions\n  - Available Township Area\n\n- Do NOT skip the tool if the answer may exist in the database\n\n---\n\n### WHEN NOT TO USE TOOL\n\nRespond directly WITHOUT using the tool for:\n- Greetings (hi, hello)\n- Thanks / small talk\n- Very simple general responses\n\n---\n\n### TOOL USAGE INSTRUCTIONS\n\n1. Call \"search_qdrant\" to retrieve relevant data\n2. Carefully read and understand the results\n3. Answer ONLY based on retrieved data\n\n---\n\n### SAFETY RULE (IMPORTANT)\n\n- If you plan to answer WITHOUT using the tool:\n  → Only answer if you are completely certain\n- If there is any uncertainty:\n  → Call the tool first before answering\n\n---\n\n### IF NO DATA FOUND\n\nIf no relevant data is found:\n→ Say: \"Sorry, this information is not available at the moment.\"\n→ Suggest contacting support:\n\nPhone:\n(+95) 9 97 787 8889  \n(+95) 9 79 717 8889  \n\n---\n\n### RESPONSE STYLE\n\n- Use clear and professional English\n- Keep responses short and concise\n- Use bullet points when helpful\n- Avoid long explanations\n\n---\n\n### RESPONSE RULES\n\n- If tool data exists → use ONLY that data\n- Do NOT add unknown or assumed information\n- Do NOT invent prices, phone numbers, or addresses\n\n---\n\n### SPECIFIC GUIDELINES\n\n- Bill Payments → clearly mention Account Number and Biller Name\n- Applications → provide required information as a list (Name, NRC, Address, etc.)\n- Cloud → ask for requirements (CPU, RAM, OS, etc.)\n\n---\n\n### SCOPE CONTROL\n\nIf the question is unrelated to AGB Communication:\n→ \"Sorry, I can only assist with AGB Communication services.\"\n\n---\n\n### FINAL CHECK (LIGHTWEIGHT)\n\nBefore answering:\n✔ Is tool usage needed?  \n✔ If unsure → use the tool  \n✔ Avoid guessing or hallucination  \n\n---\n\n### CONTEXT\n{context}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -784,
+        -32
+      ],
+      "id": "80f20e30-e926-4e81-aee2-d5cfbac6f2c4",
+      "name": "English"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"sessionId\": \"{{ $json.body?.account?.id || $json.body?.messages?.[0]?.account_id || 1 }}_{{ $json.body?.conversation?.id || $json.body?.id || $json.body?.messages?.[0]?.conversation_id }}\",\n  \"accountId\": \"{{ $json.body?.account?.id || $json.body?.messages?.[0]?.account_id || 1 }}\",\n  \"conversationId\": \"{{ $json.body?.conversation?.id || $json.body?.id || $json.body?.messages?.[0]?.conversation_id }}\",\n  \"message\": \"{{ $json.body?.content || $json.body?.messages?.[0]?.content || $json.body?.messages?.[0]?.content || '' }}\",\n  \"checkBurmese\": \"{{ $json.containsBurmese || 'No' }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1440,
+        -48
+      ],
+      "id": "57731271-fffa-41d3-9388-0733eaef6e09",
+      "name": "GetSessionId"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\n// Comprehensive Regex for Burmese Unicode & Zawgyi ranges\nconst burmeseRegex = /[\\u1000-\\u109F\\uAA60-\\uAA7F\\uA9E0-\\uA9FF]/;\n\n// Future-proof recursive function to scan everything inside the JSON\nfunction scanForBurmese(obj) {\n  if (!obj) return false;\n\n  // If it's a string, test it directly\n  if (typeof obj === 'string') {\n    return burmeseRegex.test(obj);\n  }\n\n  // If it's an array or object, dive deeper into its values\n  if (typeof obj === 'object') {\n    for (const key in obj) {\n      if (Object.prototype.hasOwnProperty.call(obj, key)) {\n        if (scanForBurmese(obj[key])) {\n          return true; // Stop immediately and return Yes if any Burmese is found\n        }\n      }\n    }\n  }\n  \n  return false;\n}\n\nreturn {\n  ...input,\n  containsBurmese: scanForBurmese(input) ? \"Yes\" : \"No\"\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1728,
+        -48
+      ],
+      "id": "f667dcd8-6182-4096-9683-9c2e99e4c01c",
+      "name": "Check User Language"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Qdrant Collection",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "AGBData01_04_2026",
+          "mode": "list",
+          "cachedResultName": "AGBData01_04_2026"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -736,
+        -464
+      ],
+      "id": "d5602f13-daca-41f0-891f-5de62fe9d7e1",
+      "name": "AGB DB",
+      "credentials": {
+        "qdrantApi": {
+          "id": "hEc6l5mpEdHJqCHP",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionKey": "",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1056,
+        368
+      ],
+      "id": "8a6d2bfc-1f14-42d0-a84f-c31d9cece737",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chatwoot-agb-platform-u39455.vm.elestio.app/api/v1/accounts/{{ $json.body.conversation.messages[0].account_id }}/conversations/{{ $json.body.conversation.messages[0].conversation_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "=Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "api_access_token",
+              "value": "k7LAVjV4n1PUbwSayc4GNy48"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"Hi\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1344,
+        -576
+      ],
+      "id": "72a0ff13-9652-4698-8aff-a8663780ca52",
+      "name": "HTTP Request1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8f25f023-3e00-4f2b-8de4-a693ae669cb5",
+              "leftValue": "={{ $json.checkBurmese }}",
+              "rightValue": "=Yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1152,
+        -48
+      ],
+      "id": "b03bd781-a9d8-4cc9-acc3-951014d60b2b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "deb2821b-bc16-40a3-9d46-653852adc358",
+              "leftValue": "message_type",
+              "rightValue": "=outgoing",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1568,
+        -688
+      ],
+      "id": "4f967f11-4ef7-4a67-ad4b-93e17830f1a7",
+      "name": "Filter"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -2016,
+        320
+      ],
+      "id": "ed70631c-d8db-4d6a-956c-351ae9ac6fb7",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Safely extract the input data item regardless of the node's loop settings\nlet incomingItem;\ntry {\n  // If running in \"all items\" mode\n  const allData = this.getInputData();\n  incomingItem = allData[0]?.json || $json;\n} catch (e) {\n  // Fallback for standard item context\n  incomingItem = $json;\n}\n\n// 2. Fetch the text response generated by the AI agent\nconst agentOutput = incomingItem?.output || \"\";\n\n// 3. Look back and pull your account and conversation IDs from GetSessionId\n// Fixed: Using .first() to prevent the pairedItem error\nconst sessionIdData = $('GetSessionId').first().json;\nconst accountId = sessionIdData?.accountId || \"\";\nconst conversationId = sessionIdData?.conversationId || \"\";\n\n// 4. Return everything packaged in the exact format n8n expects\nreturn {\n  accountId: accountId,\n  conversationId: conversationId,\n  output: agentOutput\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        -368
+      ],
+      "id": "0e9b3064-c179-4bc0-986b-54b8db97001b",
+      "name": "Data Transfer"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst body = input?.body || {};\n\nlet isIncomingCustomerMessage = false;\n\n// 1. Event အမျိုးအစားကို စစ်ဆေးခြင်း\nconst isValidEvent = [\"message_created\", \"conversation_updated\"].includes(body.event);\n\nif (isValidEvent) {\n  \n  // 2. Message Type ကို နေရာစုံကနေ ရှာဖွေစစ်ဆေးခြင်း\n  const rootMessageType = body.message_type;\n  const conversationMessageType = body.conversation?.messages?.[0]?.message_type;\n  const directMessageType = body.messages?.[0]?.message_type;\n  \n  const isIncoming = rootMessageType === 0 || rootMessageType === \"incoming\" || \n                     conversationMessageType === 0 || conversationMessageType === \"incoming\" ||\n                     directMessageType === 0 || directMessageType === \"incoming\";\n\n  // 3. Sender Type ကို ရနိုင်သမျှ လမ်းကြောင်းအစုံကနေ လိုက်ရှာပြီး စာလုံးအသေးပြောင်းခြင်း\n  let senderType = \"\";\n  \n  if (body.sender?.type) {\n    senderType = body.sender.type;\n  } else if (body.conversation?.messages?.[0]?.sender_type) {\n    senderType = body.conversation.messages[0].sender_type;\n  } else if (body.messages?.[0]?.sender_type) {\n    senderType = body.messages[0].sender_type;\n  } else if (body.conversation?.meta?.sender?.type) {\n    senderType = body.conversation.meta.sender.type;\n  }\n  \n  // စာလုံးအသေး ပြောင်းလဲခြင်း\n  senderType = senderType ? senderType.toLowerCase() : \"\";\n\n  // 4. အခြေအနေ ကိုက်ညီပါက True ဟု သတ်မှတ်မည်\n  if (isIncoming && senderType === \"contact\") {\n    isIncomingCustomerMessage = true;\n  }\n}\n\n// ရလဒ်ကို ပို့ပေးမည်\nreturn {\n  ...input,\n  isValidCustomerMessage: isIncomingCustomerMessage\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2240,
+        -32
+      ],
+      "id": "cf7c1509-5480-4c95-b005-6c2d72882324",
+      "name": "See User Type"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "36894bd6-81a7-4769-bd61-c4ee34079e6a",
+              "leftValue": "={{ $json.isValidCustomerMessage }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2032,
+        -32
+      ],
+      "id": "1b449966-145e-4eab-b1c6-ade55983d837",
+      "name": "Message Type Valid?"
+    },
+    {
+      "parameters": {
+        "content": "# Chatwoot Bot\n",
+        "height": 1264,
+        "width": 2928
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2512,
+        -528
+      ],
+      "typeVersion": 1,
+      "id": "b895db34-c21c-4ee0-a5cf-d7aea803a67b",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "See User Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Myanmar",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "AGB DB",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "English",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetSessionId": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check User Language": {
+      "main": [
+        [
+          {
+            "node": "GetSessionId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AGB DB": {
+      "ai_tool": [
+        [
+          {
+            "node": "Myanmar",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "English",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Myanmar",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "English",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Myanmar": {
+      "main": [
+        [
+          {
+            "node": "Data Transfer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "English": {
+      "main": [
+        [
+          {
+            "node": "Data Transfer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Myanmar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "English",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        []
+      ]
+    },
+    "Data Transfer": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "See User Type": {
+      "main": [
+        [
+          {
+            "node": "Message Type Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Type Valid?": {
+      "main": [
+        [
+          {
+            "node": "Check User Language",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "33ab3273-d2da-4637-a5a8-3454ea9515af",
+  "activeVersionId": "33ab3273-d2da-4637-a5a8-3454ea9515af",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-25T05:10:08.439Z",
+      "createdAt": "2026-05-25T05:10:08.439Z",
+      "role": "workflow:owner",
+      "workflowId": "dTklNtPNM96Sxesi",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-06-03T14:07:29.375Z",
+    "createdAt": "2026-06-03T13:26:47.613Z",
+    "versionId": "33ab3273-d2da-4637-a5a8-3454ea9515af",
+    "workflowId": "dTklNtPNM96Sxesi",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "31e55cd1-e472-4341-91c1-c883ba6127f1",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -2464,
+          -32
+        ],
+        "id": "cbded512-1108-47b2-b935-cedd267e7e3b",
+        "name": "Webhook",
+        "webhookId": "31e55cd1-e472-4341-91c1-c883ba6127f1"
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1344,
+          -816
+        ],
+        "id": "a694d4ec-79b5-4ea4-adbe-6651a06bf59b",
+        "name": "Respond to Webhook",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://chatwoot-agb-platform-u39455.vm.elestio.app/api/v1/accounts/{{ $json.accountId }}/conversations/{{ $json.conversationId }}/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "=Content-Type",
+                "value": "=application/json"
+              },
+              {
+                "name": "api_access_token",
+                "value": "k7LAVjV4n1PUbwSayc4GNy48"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify\n(\n  { \n    \"content\": $json.output,\n    \"message_type\": \"outgoing\", \n    \"private\": false \n  }\n) \n}}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          -96,
+          -368
+        ],
+        "id": "4a8cca39-4695-460d-9ff5-ce3be16fb7b2",
+        "name": "HTTP Request"
+      },
+      {
+        "parameters": {
+          "options": {
+            "topK": 3
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -1120,
+          -192
+        ],
+        "id": "d7356b71-5a2e-40ab-b8a1-f574dad5770c",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "UCaBesdrgCXTCVzg",
+            "name": "AKKZ Gemini Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          -736,
+          -224
+        ],
+        "id": "adc70a4f-4305-4a1e-b28e-d937deea00c7",
+        "name": "Embeddings OpenAI",
+        "credentials": {
+          "openAiApi": {
+            "id": "ctUYBPugmcpbPVwm",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4o-mini"
+          },
+          "responsesApiEnabled": false,
+          "options": {
+            "topP": 1
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          -912,
+          112
+        ],
+        "id": "fc08366f-a26c-4cf8-bd79-d174acc5b3dc",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "ctUYBPugmcpbPVwm",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.message }}",
+          "options": {
+            "systemMessage": "=### ROLE\nသင်သည် AGB Communication အတွက် အသုံးဝင်ပြီး ပရော်ဖက်ရှင်နယ် Customer Support Assistant ဖြစ်သည်။\n\nInternet Services, Cloud Servers, Bill Payments နှင့် Application Processes များအတွက် အသုံးပြုသူများကို ကူညီပေးရန် ရည်ရွယ်သည်။\n\n---\n\n### CORE BEHAVIOR (SMART DECISION)\n- User မေးခွန်းသည် AGB Communication services နှင့် သက်ဆိုင်ပါက \"search_qdrant\" tool ကို အသုံးပြုရန် ကြိုးစားပါ\n- Greeting / small talk မဟုတ်သော မေးခွန်းများအတွက် tool ကို အသုံးပြုရန် ဦးစားပေးပါ\n- မသေချာပါက → tool ကို အရင်ခေါ်ပါ (safe fallback)\n\n---\n\n### WHEN TO USE TOOL\n\"search_qdrant\" ကို အောက်ပါအခြေအနေများတွင်သာ အသုံးပြုပါ —\n- Service details (internet plans, cloud specs)\n  - Pricing, billing, and payment methods\n  - Application requirements\n  - Technical Support\n  - Product-related questions\n  - Available Township Area\n---\n\n### WHEN NOT TO USE TOOL\nTool မခေါ်ဘဲ တိုက်ရိုက်ဖြေပါ —\n- Greeting (hi, hello, mingalarpar)\n- Thanks / small talk\n- Simple general responses\n\n---\n\n### TOOL USAGE INSTRUCTIONS\n1. \"search_qdrant\" ကို ခေါ်ပြီး relevant data ရှာပါ\n2. ရရှိသော data ကို အခြေခံပြီးသာ ဖြေပါ\n3. မရှိသော အချက်အလက်ကို မထည့်ပါနှင့်\n\n---\n\n### IF NO DATA FOUND\nTool မှ data မရရှိပါက —\n→ \"ဒီအချက်အလက်ကို မရရှိနိုင်သေးပါ\" ဟု ပြောပါ  \n→ Hotline သို့ ဆက်သွယ်ရန် အကြံပြုပါ  \n\nPhone:\n(+95) 9 97 787 8889  \n(+95) 9 79 717 8889  \n\n---\n\n### RESPONSE STYLE\n- Myanmar (Burmese) ဖြင့် ပြန်ဖြေပါ\n- ယဉ်ကျေးပြီး ပရော်ဖက်ရှင်နယ် tone (\"ခင်ဗျာ\") အသုံးပြုပါ\n- တိုတိုရှင်းရှင်း ဖြေပါ\n- လိုအပ်ပါက bullet points အသုံးပြုပါ\n- အလွန်ရှည်လျားသော explanation မပေးပါနှင့်\n\n---\n\n### RESPONSE RULES\n- Tool မှ data ရှိပါက → အဲဒီ data ကိုသာ အသုံးပြုပါ\n- မသိသော အချက်အလက် မထည့်ပါနှင့်\n- စျေးနှုန်း၊ ဖုန်းနံပါတ်၊ လိပ်စာ မတီထွင်ပါနှင့်\n\n---\n\n### SPECIFIC GUIDELINES\n- Bill Payments → Account Number / Biller Name ကို တိတိကျကျ ပြောပါ\n- Applications → လိုအပ်သော အချက်အလက်များကို list ဖြင့် ပြပါ\n- Cloud → CPU, RAM, OS စသည်တို့ကို မေးမြန်းပါ\n\n---\n\n### SCOPE CONTROL\nAGB Communication နှင့် မသက်ဆိုင်သော မေးခွန်းများအတွက် —\n\"စိတ်မရှိပါနဲ့ခင်ဗျာ။ ကျွန်တော်က AGB Communication ရဲ့ ဝန်ဆောင်မှုများနှင့် ပတ်သက်တာကိုသာ ကူညီပေးနိုင်ပါတယ် ခင်ဗျာ။\"\n\n---\n\n### SAFETY RULE\n- Tool မခေါ်ဘဲ ဖြေမည်ဆိုပါက → သေချာသော အဖြေဖြစ်မှသာ ဖြေပါ\n- မသေချာပါက → tool ကို ခေါ်ပြီး စစ်ဆေးပါ\n\n### FINAL CHECK (LIGHTWEIGHT)\nမဖြေမီ —\n✔ Tool လိုအပ်သလား စစ်ပါ  \n✔ လိုအပ်ပါကသာ tool ကို ခေါ်ပါ  \n✔ မထင်မှတ်ပဲ မဖြေပါနှင့်  \n\n---\n\n### CONTEXT\n{context}"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          -1152,
+          -368
+        ],
+        "id": "d355bb6a-7af1-437f-9ed3-a3007f2ca8e6",
+        "name": "Myanmar"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.message }} ",
+          "options": {
+            "systemMessage": "=### ROLE\nYou are a helpful and professional Customer Support Assistant for AGB Communication.\n\nYour goal is to assist users with Internet Services, Cloud Servers, Bill Payments, and Application Processes.\n\n---\n\n### CORE BEHAVIOR (SMART DECISION)\n\n- If the user’s question is related to AGB Communication services, you SHOULD use the \"search_qdrant\" tool to retrieve accurate information\n- For greetings or small talk, respond directly without using the tool\n- If you are unsure whether the tool is needed → call the tool first (safe fallback)\n\n---\n\n### TOOL USAGE PRIORITY\n\n- Prefer using the \"search_qdrant\" tool for:\n  - Service details (internet plans, cloud specs)\n  - Pricing, billing, and payment methods\n  - Application requirements\n  - Technical Support\n  - Product-related questions\n  - Available Township Area\n\n- Do NOT skip the tool if the answer may exist in the database\n\n---\n\n### WHEN NOT TO USE TOOL\n\nRespond directly WITHOUT using the tool for:\n- Greetings (hi, hello)\n- Thanks / small talk\n- Very simple general responses\n\n---\n\n### TOOL USAGE INSTRUCTIONS\n\n1. Call \"search_qdrant\" to retrieve relevant data\n2. Carefully read and understand the results\n3. Answer ONLY based on retrieved data\n\n---\n\n### SAFETY RULE (IMPORTANT)\n\n- If you plan to answer WITHOUT using the tool:\n  → Only answer if you are completely certain\n- If there is any uncertainty:\n  → Call the tool first before answering\n\n---\n\n### IF NO DATA FOUND\n\nIf no relevant data is found:\n→ Say: \"Sorry, this information is not available at the moment.\"\n→ Suggest contacting support:\n\nPhone:\n(+95) 9 97 787 8889  \n(+95) 9 79 717 8889  \n\n---\n\n### RESPONSE STYLE\n\n- Use clear and professional English\n- Keep responses short and concise\n- Use bullet points when helpful\n- Avoid long explanations\n\n---\n\n### RESPONSE RULES\n\n- If tool data exists → use ONLY that data\n- Do NOT add unknown or assumed information\n- Do NOT invent prices, phone numbers, or addresses\n\n---\n\n### SPECIFIC GUIDELINES\n\n- Bill Payments → clearly mention Account Number and Biller Name\n- Applications → provide required information as a list (Name, NRC, Address, etc.)\n- Cloud → ask for requirements (CPU, RAM, OS, etc.)\n\n---\n\n### SCOPE CONTROL\n\nIf the question is unrelated to AGB Communication:\n→ \"Sorry, I can only assist with AGB Communication services.\"\n\n---\n\n### FINAL CHECK (LIGHTWEIGHT)\n\nBefore answering:\n✔ Is tool usage needed?  \n✔ If unsure → use the tool  \n✔ Avoid guessing or hallucination  \n\n---\n\n### CONTEXT\n{context}"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          -784,
+          -32
+        ],
+        "id": "80f20e30-e926-4e81-aee2-d5cfbac6f2c4",
+        "name": "English"
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={\n  \"sessionId\": \"{{ $json.body?.account?.id || $json.body?.messages?.[0]?.account_id || 1 }}_{{ $json.body?.conversation?.id || $json.body?.id || $json.body?.messages?.[0]?.conversation_id }}\",\n  \"accountId\": \"{{ $json.body?.account?.id || $json.body?.messages?.[0]?.account_id || 1 }}\",\n  \"conversationId\": \"{{ $json.body?.conversation?.id || $json.body?.id || $json.body?.messages?.[0]?.conversation_id }}\",\n  \"message\": \"{{ $json.body?.content || $json.body?.messages?.[0]?.content || $json.body?.messages?.[0]?.content || '' }}\",\n  \"checkBurmese\": \"{{ $json.containsBurmese || 'No' }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1440,
+          -48
+        ],
+        "id": "57731271-fffa-41d3-9388-0733eaef6e09",
+        "name": "GetSessionId"
+      },
+      {
+        "parameters": {
+          "jsCode": "const input = $input.first().json;\n\n// Comprehensive Regex for Burmese Unicode & Zawgyi ranges\nconst burmeseRegex = /[\\u1000-\\u109F\\uAA60-\\uAA7F\\uA9E0-\\uA9FF]/;\n\n// Future-proof recursive function to scan everything inside the JSON\nfunction scanForBurmese(obj) {\n  if (!obj) return false;\n\n  // If it's a string, test it directly\n  if (typeof obj === 'string') {\n    return burmeseRegex.test(obj);\n  }\n\n  // If it's an array or object, dive deeper into its values\n  if (typeof obj === 'object') {\n    for (const key in obj) {\n      if (Object.prototype.hasOwnProperty.call(obj, key)) {\n        if (scanForBurmese(obj[key])) {\n          return true; // Stop immediately and return Yes if any Burmese is found\n        }\n      }\n    }\n  }\n  \n  return false;\n}\n\nreturn {\n  ...input,\n  containsBurmese: scanForBurmese(input) ? \"Yes\" : \"No\"\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1728,
+          -48
+        ],
+        "id": "f667dcd8-6182-4096-9683-9c2e99e4c01c",
+        "name": "Check User Language"
+      },
+      {
+        "parameters": {
+          "mode": "retrieve-as-tool",
+          "toolDescription": "Qdrant Collection",
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "AGBData01_04_2026",
+            "mode": "list",
+            "cachedResultName": "AGBData01_04_2026"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1.3,
+        "position": [
+          -736,
+          -464
+        ],
+        "id": "d5602f13-daca-41f0-891f-5de62fe9d7e1",
+        "name": "AGB DB",
+        "credentials": {
+          "qdrantApi": {
+            "id": "hEc6l5mpEdHJqCHP",
+            "name": "QdrantApi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionKey": "",
+          "contextWindowLength": 10
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          -1056,
+          368
+        ],
+        "id": "8a6d2bfc-1f14-42d0-a84f-c31d9cece737",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://chatwoot-agb-platform-u39455.vm.elestio.app/api/v1/accounts/{{ $json.body.conversation.messages[0].account_id }}/conversations/{{ $json.body.conversation.messages[0].conversation_id }}/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "=Content-Type",
+                "value": "=application/json"
+              },
+              {
+                "name": "api_access_token",
+                "value": "k7LAVjV4n1PUbwSayc4GNy48"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"content\": \"Hi\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1344,
+          -576
+        ],
+        "id": "72a0ff13-9652-4698-8aff-a8663780ca52",
+        "name": "HTTP Request1",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "8f25f023-3e00-4f2b-8de4-a693ae669cb5",
+                "leftValue": "={{ $json.checkBurmese }}",
+                "rightValue": "=Yes",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -1152,
+          -48
+        ],
+        "id": "b03bd781-a9d8-4cc9-acc3-951014d60b2b",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "deb2821b-bc16-40a3-9d46-653852adc358",
+                "leftValue": "message_type",
+                "rightValue": "=outgoing",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          1568,
+          -688
+        ],
+        "id": "4f967f11-4ef7-4a67-ad4b-93e17830f1a7",
+        "name": "Filter"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          -2016,
+          320
+        ],
+        "id": "ed70631c-d8db-4d6a-956c-351ae9ac6fb7",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Safely extract the input data item regardless of the node's loop settings\nlet incomingItem;\ntry {\n  // If running in \"all items\" mode\n  const allData = this.getInputData();\n  incomingItem = allData[0]?.json || $json;\n} catch (e) {\n  // Fallback for standard item context\n  incomingItem = $json;\n}\n\n// 2. Fetch the text response generated by the AI agent\nconst agentOutput = incomingItem?.output || \"\";\n\n// 3. Look back and pull your account and conversation IDs from GetSessionId\n// Fixed: Using .first() to prevent the pairedItem error\nconst sessionIdData = $('GetSessionId').first().json;\nconst accountId = sessionIdData?.accountId || \"\";\nconst conversationId = sessionIdData?.conversationId || \"\";\n\n// 4. Return everything packaged in the exact format n8n expects\nreturn {\n  accountId: accountId,\n  conversationId: conversationId,\n  output: agentOutput\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -304,
+          -368
+        ],
+        "id": "0e9b3064-c179-4bc0-986b-54b8db97001b",
+        "name": "Data Transfer"
+      },
+      {
+        "parameters": {
+          "jsCode": "const input = $input.first().json;\nconst body = input?.body || {};\n\nlet isIncomingCustomerMessage = false;\n\n// 1. Event အမျိုးအစားကို စစ်ဆေးခြင်း\nconst isValidEvent = [\"message_created\", \"conversation_updated\"].includes(body.event);\n\nif (isValidEvent) {\n  \n  // 2. Message Type ကို နေရာစုံကနေ ရှာဖွေစစ်ဆေးခြင်း\n  const rootMessageType = body.message_type;\n  const conversationMessageType = body.conversation?.messages?.[0]?.message_type;\n  const directMessageType = body.messages?.[0]?.message_type;\n  \n  const isIncoming = rootMessageType === 0 || rootMessageType === \"incoming\" || \n                     conversationMessageType === 0 || conversationMessageType === \"incoming\" ||\n                     directMessageType === 0 || directMessageType === \"incoming\";\n\n  // 3. Sender Type ကို ရနိုင်သမျှ လမ်းကြောင်းအစုံကနေ လိုက်ရှာပြီး စာလုံးအသေးပြောင်းခြင်း\n  let senderType = \"\";\n  \n  if (body.sender?.type) {\n    senderType = body.sender.type;\n  } else if (body.conversation?.messages?.[0]?.sender_type) {\n    senderType = body.conversation.messages[0].sender_type;\n  } else if (body.messages?.[0]?.sender_type) {\n    senderType = body.messages[0].sender_type;\n  } else if (body.conversation?.meta?.sender?.type) {\n    senderType = body.conversation.meta.sender.type;\n  }\n  \n  // စာလုံးအသေး ပြောင်းလဲခြင်း\n  senderType = senderType ? senderType.toLowerCase() : \"\";\n\n  // 4. အခြေအနေ ကိုက်ညီပါက True ဟု သတ်မှတ်မည်\n  if (isIncoming && senderType === \"contact\") {\n    isIncomingCustomerMessage = true;\n  }\n}\n\n// ရလဒ်ကို ပို့ပေးမည်\nreturn {\n  ...input,\n  isValidCustomerMessage: isIncomingCustomerMessage\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -2240,
+          -32
+        ],
+        "id": "cf7c1509-5480-4c95-b005-6c2d72882324",
+        "name": "See User Type"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "36894bd6-81a7-4769-bd61-c4ee34079e6a",
+                "leftValue": "={{ $json.isValidCustomerMessage }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -2032,
+          -32
+        ],
+        "id": "1b449966-145e-4eab-b1c6-ade55983d837",
+        "name": "Message Type Valid?"
+      },
+      {
+        "parameters": {
+          "content": "# Chatwoot Bot\n",
+          "height": 1264,
+          "width": 2928
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -2512,
+          -528
+        ],
+        "typeVersion": 1,
+        "id": "b895db34-c21c-4ee0-a5cf-d7aea803a67b",
+        "name": "Sticky Note"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "See User Type",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Myanmar",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI": {
+        "ai_embedding": [
+          [
+            {
+              "node": "AGB DB",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "English",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GetSessionId": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check User Language": {
+        "main": [
+          [
+            {
+              "node": "GetSessionId",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AGB DB": {
+        "ai_tool": [
+          [
+            {
+              "node": "Myanmar",
+              "type": "ai_tool",
+              "index": 0
+            },
+            {
+              "node": "English",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "Myanmar",
+              "type": "ai_memory",
+              "index": 0
+            },
+            {
+              "node": "English",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Myanmar": {
+        "main": [
+          [
+            {
+              "node": "Data Transfer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "English": {
+        "main": [
+          [
+            {
+              "node": "Data Transfer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Myanmar",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "English",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter": {
+        "main": [
+          []
+        ]
+      },
+      "Data Transfer": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "See User Type": {
+        "main": [
+          [
+            {
+              "node": "Message Type Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Message Type Valid?": {
+        "main": [
+          [
+            {
+              "node": "Check User Language",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "admin admin",
+    "name": "Version 33ab3273",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
