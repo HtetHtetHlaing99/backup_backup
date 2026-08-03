@@ -1,0 +1,1139 @@
+{
+  "updatedAt": "2026-03-26T02:44:56.056Z",
+  "createdAt": "2026-03-25T07:24:11.295Z",
+  "id": "PP0jq3aXXrzNYY4n",
+  "name": "Microsoft Teams AI Chat Agent Bot",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "event": "newChatMessage",
+        "chatId": {
+          "__rl": true,
+          "value": "19:1c7507ce7a884d49a2b4fd042012e9fe@thread.v2",
+          "mode": "list",
+          "cachedResultName": "DigInternal (group)",
+          "cachedResultUrl": "https://teams.microsoft.com/l/chat/19%3A1c7507ce7a884d49a2b4fd042012e9fe%40thread.v2/0?tenantId=dc60f70a-bd29-4a9e-a6bb-faf5b3b8fc3f"
+        }
+      },
+      "id": "f6c386f6-99b3-46ed-b412-460ea948d380",
+      "name": "Microsoft Teams Trigger",
+      "type": "n8n-nodes-base.microsoftTeamsTrigger",
+      "typeVersion": 1,
+      "position": [
+        496,
+        400
+      ],
+      "webhookId": "47267e78-8166-4efd-92f1-50d003a95119",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "07y1I64RyeSNuqDy",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatUrl = items[0].json['@odata.id'];\nconst chatId = chatUrl.split(\"'\")[1];\nconst messageId = items[0].json.id;\n\nreturn {\n  chatId,\n  messageId\n};"
+      },
+      "id": "c624fb98-5bd6-4098-92b5-3d9051c66fc3",
+      "name": "Get IDs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "unit": "seconds"
+      },
+      "id": "d76ea44d-3b6c-44b5-83d7-6c6f224e54a3",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        880,
+        400
+      ],
+      "webhookId": "87a67f1e-90ee-4576-a74c-7b19c7cba6c6"
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "operation": "get",
+        "chatId": "={{ $json.chatId }}",
+        "messageId": "={{ $json.messageId }}"
+      },
+      "id": "5c78075b-79a4-4336-8814-f4d93d5d2182",
+      "name": "Get chat message",
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        400
+      ],
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "07y1I64RyeSNuqDy",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "not-bot",
+              "leftValue": "={{ $json.from.user.id }}",
+              "rightValue": "YOUR_BOT_USER_ID",
+              "operator": {
+                "type": "string",
+                "operation": "notEqual"
+              }
+            },
+            {
+              "id": "d48606a7-ae25-4a9d-b577-19af5e6c97cf",
+              "leftValue": "={{ $json.from.user.id }}",
+              "rightValue": "6e1d9fc3-5a60-42a2-85ff-655915c69559",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e43e7d1e-295c-4f72-9654-fc5c00019813",
+      "name": "Sender not Agent",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        208,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "unit": "seconds"
+      },
+      "id": "8174d28c-1586-478c-af0f-e300b91c31f7",
+      "name": "Wait2",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        752,
+        688
+      ],
+      "webhookId": "c968567f-185a-4188-af69-8db5e3c90a0b"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  chatId: $node[\"Wait2\"].json.chatId,\n  messageId: $node[\"Wait2\"].json.id,\n  // HTML tags နဲ့ &nbsp; တွေကိုပါ တစ်ခါတည်း ရှင်းထုတ်တာပါ\n  userMessage: $node[\"Get chat message\"].json.body.content\n    .replace(/<[^>]*>?/gm, '')         // HTML tags တွေ ဖယ်တယ်\n    .replace(/&nbsp;/g, ' ')           // &nbsp; တွေကို space အဖြစ် ပြောင်းတယ်\n    .trim()                            // ရှေ့နောက် ပိုနေတဲ့ space တွေ ဖြတ်တယ်\n};"
+      },
+      "id": "f3b1b15e-513d-4a38-ae04-0ff57a28bd54",
+      "name": "Get Details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "operation": "get",
+        "chatId": "={{ $json.chatId }}",
+        "messageId": "={{ $node[\"Get Details\"].json.messageId }}"
+      },
+      "id": "cb42b442-aa33-4b53-b825-24e72008f1f0",
+      "name": "Get More Chat Details",
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        480
+      ],
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "07y1I64RyeSNuqDy",
+          "name": "Microsoft Teams account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.from.user.displayName }}",
+              "value2": "Executive Name"
+            }
+          ]
+        }
+      },
+      "id": "bfbaf1c5-bf28-4d69-ae5e-e711a7c78718",
+      "name": "If Executive",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        464,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.chatType }}",
+              "value2": "oneOnOne"
+            }
+          ]
+        }
+      },
+      "id": "4afbcef3-bd5f-44b4-954b-8e5e8c4845af",
+      "name": "Filter one to one",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 1,
+      "position": [
+        832,
+        1120
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "unit": "seconds"
+      },
+      "id": "eac43d82-064b-4f77-94f0-2c03f258e33f",
+      "name": "Wait3",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        688
+      ],
+      "webhookId": "eabb14f2-11fa-4887-8f0d-191b291cb1df"
+    },
+    {
+      "parameters": {
+        "resource": "chatMessage",
+        "chatId": "={{ $node[\"Get Details\"].json.chatId }}",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "id": "d55b5fff-d5a0-43ae-810a-7ff6954b13f6",
+      "name": "Create chat message1",
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        1120
+      ],
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "07y1I64RyeSNuqDy",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Get Details').item.json.userMessage }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        1120
+      ],
+      "id": "7c4b280e-5332-4236-9dea-abdf42432de9",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f8509bac-7111-42d6-beaf-d920533f8ac5",
+              "leftValue": "={{ $json.from.user.id }}",
+              "rightValue": "6e1d9fc3-5a60-42a2-85ff-655915c69559",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        480,
+        704
+      ],
+      "id": "7f287cd5-cc92-4384-855d-5cffc24e0359",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfb20fda-7e45-4565-b380-a9c5dfcc2aec",
+              "name": "Message",
+              "value": "={{ $json.body.content }}",
+              "type": "string"
+            },
+            {
+              "id": "01166b23-712e-41d9-8013-bcb8fe7bc08e",
+              "name": "Mention",
+              "value": "={{ $json.mentions[0].mentionText }}",
+              "type": "string"
+            },
+            {
+              "id": "7befc90f-94a0-4cc8-a49b-c24d09a8c958",
+              "name": "From",
+              "value": "={{ $json.from.user.displayName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        688
+      ],
+      "id": "b893fc1d-d9a2-43c7-94c9-f21ff48d033b",
+      "name": "Get Details1"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.microsoft.com/v1.0/chats/{{ $node[\"Get Details\"].json.chatId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftTeamsOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1520,
+        688
+      ],
+      "id": "997f97e1-006f-4ae5-b108-4644d95e8171",
+      "name": "HTTP Request",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "07y1I64RyeSNuqDy",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        1328
+      ],
+      "id": "db1d484d-d2bd-453f-8856-4e69d56ee38d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Microsoft Teams Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get IDs": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get chat message": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sender not Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Get Details1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Details": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get More Chat Details": {
+      "main": [
+        []
+      ]
+    },
+    "If Executive": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Filter one to one",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "If Executive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter one to one": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create chat message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Details1": {
+      "main": [
+        [
+          {
+            "node": "Get Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Microsoft Teams Trigger": {
+      "subscriptionIds": [
+        "10a1e288-4963-4889-be95-f2a14f5ef697"
+      ],
+      "webhookSecret": "ffb103a0eb8eef92e5ba31b2255e9ab30f5bd4d2f051025da142ad67dda74bcf"
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "5ddce461-202e-45b7-a09a-9883d5842792",
+  "activeVersionId": "238586d9-3594-4d76-9d01-8fda8981bec7",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-25T07:24:11.295Z",
+      "createdAt": "2026-03-25T07:24:11.295Z",
+      "role": "workflow:owner",
+      "workflowId": "PP0jq3aXXrzNYY4n",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-25T09:45:38.447Z",
+    "createdAt": "2026-03-25T09:44:15.125Z",
+    "versionId": "238586d9-3594-4d76-9d01-8fda8981bec7",
+    "workflowId": "PP0jq3aXXrzNYY4n",
+    "nodes": [
+      {
+        "parameters": {
+          "event": "newChatMessage",
+          "chatId": {
+            "__rl": true,
+            "value": "19:1c7507ce7a884d49a2b4fd042012e9fe@thread.v2",
+            "mode": "list",
+            "cachedResultName": "DigInternal (group)",
+            "cachedResultUrl": "https://teams.microsoft.com/l/chat/19%3A1c7507ce7a884d49a2b4fd042012e9fe%40thread.v2/0?tenantId=dc60f70a-bd29-4a9e-a6bb-faf5b3b8fc3f"
+          }
+        },
+        "id": "f6c386f6-99b3-46ed-b412-460ea948d380",
+        "name": "Microsoft Teams Trigger",
+        "type": "n8n-nodes-base.microsoftTeamsTrigger",
+        "typeVersion": 1,
+        "position": [
+          496,
+          400
+        ],
+        "webhookId": "47267e78-8166-4efd-92f1-50d003a95119",
+        "credentials": {
+          "microsoftTeamsOAuth2Api": {
+            "id": "07y1I64RyeSNuqDy",
+            "name": "Microsoft Teams account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const chatUrl = items[0].json['@odata.id'];\nconst chatId = chatUrl.split(\"'\")[1];\nconst messageId = items[0].json.id;\n\nreturn {\n  chatId,\n  messageId\n};"
+        },
+        "id": "c624fb98-5bd6-4098-92b5-3d9051c66fc3",
+        "name": "Get IDs",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          720,
+          400
+        ]
+      },
+      {
+        "parameters": {
+          "unit": "seconds"
+        },
+        "id": "d76ea44d-3b6c-44b5-83d7-6c6f224e54a3",
+        "name": "Wait",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1,
+        "position": [
+          880,
+          400
+        ],
+        "webhookId": "87a67f1e-90ee-4576-a74c-7b19c7cba6c6"
+      },
+      {
+        "parameters": {
+          "resource": "chatMessage",
+          "operation": "get",
+          "chatId": "={{ $json.chatId }}",
+          "messageId": "={{ $json.messageId }}"
+        },
+        "id": "5c78075b-79a4-4336-8814-f4d93d5d2182",
+        "name": "Get chat message",
+        "type": "n8n-nodes-base.microsoftTeams",
+        "typeVersion": 1,
+        "position": [
+          1040,
+          400
+        ],
+        "credentials": {
+          "microsoftTeamsOAuth2Api": {
+            "id": "07y1I64RyeSNuqDy",
+            "name": "Microsoft Teams account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "not-bot",
+                "leftValue": "={{ $json.from.user.id }}",
+                "rightValue": "YOUR_BOT_USER_ID",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEqual"
+                }
+              },
+              {
+                "id": "d48606a7-ae25-4a9d-b577-19af5e6c97cf",
+                "leftValue": "={{ $json.from.user.id }}",
+                "rightValue": "6e1d9fc3-5a60-42a2-85ff-655915c69559",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "e43e7d1e-295c-4f72-9654-fc5c00019813",
+        "name": "Sender not Agent",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2,
+        "position": [
+          208,
+          736
+        ]
+      },
+      {
+        "parameters": {
+          "unit": "seconds"
+        },
+        "id": "8174d28c-1586-478c-af0f-e300b91c31f7",
+        "name": "Wait2",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1,
+        "position": [
+          752,
+          688
+        ],
+        "webhookId": "c968567f-185a-4188-af69-8db5e3c90a0b"
+      },
+      {
+        "parameters": {
+          "jsCode": "return {\n  chatId: $node[\"Wait2\"].json.chatId,\n  messageId: $node[\"Wait2\"].json.id,\n  // HTML tags နဲ့ &nbsp; တွေကိုပါ တစ်ခါတည်း ရှင်းထုတ်တာပါ\n  userMessage: $node[\"Get chat message\"].json.body.content\n    .replace(/<[^>]*>?/gm, '')         // HTML tags တွေ ဖယ်တယ်\n    .replace(/&nbsp;/g, ' ')           // &nbsp; တွေကို space အဖြစ် ပြောင်းတယ်\n    .trim()                            // ရှေ့နောက် ပိုနေတဲ့ space တွေ ဖြတ်တယ်\n};"
+        },
+        "id": "f3b1b15e-513d-4a38-ae04-0ff57a28bd54",
+        "name": "Get Details",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1280,
+          688
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "chatMessage",
+          "operation": "get",
+          "chatId": "={{ $json.chatId }}",
+          "messageId": "={{ $node[\"Get Details\"].json.messageId }}"
+        },
+        "id": "cb42b442-aa33-4b53-b825-24e72008f1f0",
+        "name": "Get More Chat Details",
+        "type": "n8n-nodes-base.microsoftTeams",
+        "typeVersion": 1,
+        "position": [
+          1808,
+          480
+        ],
+        "credentials": {
+          "microsoftTeamsOAuth2Api": {
+            "id": "07y1I64RyeSNuqDy",
+            "name": "Microsoft Teams account"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.from.user.displayName }}",
+                "value2": "Executive Name"
+              }
+            ]
+          }
+        },
+        "id": "bfbaf1c5-bf28-4d69-ae5e-e711a7c78718",
+        "name": "If Executive",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          464,
+          1104
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.chatType }}",
+                "value2": "oneOnOne"
+              }
+            ]
+          }
+        },
+        "id": "4afbcef3-bd5f-44b4-954b-8e5e8c4845af",
+        "name": "Filter one to one",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 1,
+        "position": [
+          832,
+          1120
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "unit": "seconds"
+        },
+        "id": "eac43d82-064b-4f77-94f0-2c03f258e33f",
+        "name": "Wait3",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1,
+        "position": [
+          1776,
+          688
+        ],
+        "webhookId": "eabb14f2-11fa-4887-8f0d-191b291cb1df"
+      },
+      {
+        "parameters": {
+          "resource": "chatMessage",
+          "chatId": "={{ $node[\"Get Details\"].json.chatId }}",
+          "message": "={{ $json.output }}",
+          "options": {}
+        },
+        "id": "d55b5fff-d5a0-43ae-810a-7ff6954b13f6",
+        "name": "Create chat message1",
+        "type": "n8n-nodes-base.microsoftTeams",
+        "typeVersion": 1,
+        "position": [
+          1536,
+          1120
+        ],
+        "credentials": {
+          "microsoftTeamsOAuth2Api": {
+            "id": "07y1I64RyeSNuqDy",
+            "name": "Microsoft Teams account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $('Get Details').item.json.userMessage }}",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          1120,
+          1120
+        ],
+        "id": "7c4b280e-5332-4236-9dea-abdf42432de9",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "f8509bac-7111-42d6-beaf-d920533f8ac5",
+                "leftValue": "={{ $json.from.user.id }}",
+                "rightValue": "6e1d9fc3-5a60-42a2-85ff-655915c69559",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          480,
+          704
+        ],
+        "id": "7f287cd5-cc92-4384-855d-5cffc24e0359",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "cfb20fda-7e45-4565-b380-a9c5dfcc2aec",
+                "name": "Message",
+                "value": "={{ $json.body.content }}",
+                "type": "string"
+              },
+              {
+                "id": "01166b23-712e-41d9-8013-bcb8fe7bc08e",
+                "name": "Mention",
+                "value": "={{ $json.mentions[0].mentionText }}",
+                "type": "string"
+              },
+              {
+                "id": "7befc90f-94a0-4cc8-a49b-c24d09a8c958",
+                "name": "From",
+                "value": "={{ $json.from.user.displayName }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1024,
+          688
+        ],
+        "id": "b893fc1d-d9a2-43c7-94c9-f21ff48d033b",
+        "name": "Get Details1"
+      },
+      {
+        "parameters": {
+          "url": "=https://graph.microsoft.com/v1.0/chats/{{ $node[\"Get Details\"].json.chatId }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "microsoftTeamsOAuth2Api",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1520,
+          688
+        ],
+        "id": "997f97e1-006f-4ae5-b108-4644d95e8171",
+        "name": "HTTP Request",
+        "credentials": {
+          "microsoftTeamsOAuth2Api": {
+            "id": "07y1I64RyeSNuqDy",
+            "name": "Microsoft Teams account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-5-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          992,
+          1328
+        ],
+        "id": "db1d484d-d2bd-453f-8856-4e69d56ee38d",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "ctUYBPugmcpbPVwm",
+            "name": "OpenAi account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Microsoft Teams Trigger": {
+        "main": [
+          [
+            {
+              "node": "Get IDs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get IDs": {
+        "main": [
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "Get chat message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get chat message": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sender not Agent": {
+        "main": [
+          []
+        ]
+      },
+      "Wait2": {
+        "main": [
+          [
+            {
+              "node": "Get Details1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Details": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get More Chat Details": {
+        "main": [
+          []
+        ]
+      },
+      "If Executive": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Filter one to one",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait3": {
+        "main": [
+          [
+            {
+              "node": "If Executive",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter one to one": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Create chat message1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Wait2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Details1": {
+        "main": [
+          [
+            {
+              "node": "Get Details",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "Wait3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "admin admin",
+    "name": "Version 238586d9",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
