@@ -1,0 +1,181 @@
+{
+  "updatedAt": "2026-02-18T07:09:02.629Z",
+  "createdAt": "2026-02-18T05:24:48.223Z",
+  "id": "h35SxbLEAOBsl8bt",
+  "name": "Demo Monitoring Competitor ISPs Workflow",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -16
+      ],
+      "id": "2cc00bd7-fc27-4d67-9e24-46ac56cac43b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XsaFonQafrsIk0_PpBD1vQnIiji-VNExIh9kc9iLWnI",
+          "mode": "list",
+          "cachedResultName": "2026ISPCompetitorsList",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XsaFonQafrsIk0_PpBD1vQnIiji-VNExIh9kc9iLWnI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1951925523,
+          "mode": "list",
+          "cachedResultName": "ISP Lists",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XsaFonQafrsIk0_PpBD1vQnIiji-VNExIh9kc9iLWnI/edit#gid=1951925523"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -80,
+        -16
+      ],
+      "id": "c35c9edf-8fa0-46ce-a7a1-f96fc7e84199",
+      "name": "Get row(s) ISP Lists in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "loJJdVr2wQJ7qzU1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        128,
+        -16
+      ],
+      "id": "dc619f5a-4a3b-46a8-9e4f-f93699b67835",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "actorId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        368,
+        0
+      ],
+      "id": "c62d74f8-66ee-427a-a4cf-e3b297d271d2",
+      "name": "Run an Actor"
+    },
+    {
+      "parameters": {
+        "resource": "Datasets",
+        "options": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        384,
+        224
+      ],
+      "id": "41b5f6e9-8b66-47a6-9fe8-8cf441003129",
+      "name": "Get dataset items"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) ISP Lists in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) ISP Lists in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Run an Actor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor": {
+      "main": [
+        [
+          {
+            "node": "Get dataset items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get dataset items": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "42765e7c-5483-48aa-b600-c29bdcff6d3d",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-18T05:24:48.223Z",
+      "createdAt": "2026-02-18T05:24:48.223Z",
+      "role": "workflow:owner",
+      "workflowId": "h35SxbLEAOBsl8bt",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
