@@ -1,0 +1,76 @@
+{
+  "updatedAt": "2026-02-24T04:13:09.056Z",
+  "createdAt": "2026-02-24T04:13:00.454Z",
+  "id": "gYrIUAIPfxFXmBCZ",
+  "name": "My workflow 2",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "eadd5c48-ccdc-4bfe-b301-09d6c6d78efd",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "site": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.microsoftSharePoint",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "a87f74ec-7a2f-4b11-9010-2f1652dff333",
+      "name": "Upload file"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "4afc8d1f-1fb2-44db-93f4-5df5ebd7bcbc",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-24T04:13:00.454Z",
+      "createdAt": "2026-02-24T04:13:00.454Z",
+      "role": "workflow:owner",
+      "workflowId": "gYrIUAIPfxFXmBCZ",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
