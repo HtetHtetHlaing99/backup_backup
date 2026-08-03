@@ -1,0 +1,703 @@
+{
+  "updatedAt": "2026-06-11T10:06:17.755Z",
+  "createdAt": "2026-06-10T06:56:00.301Z",
+  "id": "haFZi6kNAGsYnwCK",
+  "name": "DGT/SOP/Pro&Logs Auto-Renew @ 2:00 MMT (Myat)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 2 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        16
+      ],
+      "id": "265a66c7-f7a4-4ef1-bfc0-a307b1f2c294",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "deactivate",
+        "workflowId": {
+          "__rl": true,
+          "value": "GmMLk3sYiZCqDhHv",
+          "mode": "list",
+          "cachedResultName": "DGTIntern Daily Report Workflow (#GmMLk3sYiZCqDhHv)"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        544,
+        352
+      ],
+      "id": "523318c1-cd52-4d1d-a594-2e5edef0ba5a",
+      "name": "Deactivate DGT Daily Report Workflow",
+      "credentials": {
+        "n8nApi": {
+          "id": "Aro4PmqV3637mOVQ",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "activate",
+        "workflowId": {
+          "__rl": true,
+          "value": "GmMLk3sYiZCqDhHv",
+          "mode": "list",
+          "cachedResultName": "DGTIntern Daily Report Workflow (#GmMLk3sYiZCqDhHv)"
+        },
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        960,
+        352
+      ],
+      "id": "368e0b9d-996f-494f-9661-02b1d51dddc4",
+      "name": "Activate DGT Daily Report Workflow",
+      "credentials": {
+        "n8nApi": {
+          "id": "Aro4PmqV3637mOVQ",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        352
+      ],
+      "id": "dbe6345d-e391-476a-9b51-e5bae627246d",
+      "name": "Wait DGT Daily Report Workflow",
+      "webhookId": "f36d90ec-3dbb-42b9-a319-e365e184ed0b"
+    },
+    {
+      "parameters": {
+        "operation": "deactivate",
+        "workflowId": {
+          "__rl": true,
+          "value": "SLvEf71WClAXLQgV",
+          "mode": "list",
+          "cachedResultName": "SOP Daily Report Automation Workflow (#SLvEf71WClAXLQgV)"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        352
+      ],
+      "id": "16d5be82-5b12-4736-81f9-b7ce8a091fa7",
+      "name": "Deactivate SOP Daily Report Automation Workflow",
+      "credentials": {
+        "n8nApi": {
+          "id": "Aro4PmqV3637mOVQ",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1376,
+        352
+      ],
+      "id": "5dd91235-251d-4b66-ad41-519e009e4e9e",
+      "name": "Wait SOP Daily Report Automation Workflow",
+      "webhookId": "1613ce2a-78dc-4497-b678-87efa4c8027c"
+    },
+    {
+      "parameters": {
+        "operation": "activate",
+        "workflowId": {
+          "__rl": true,
+          "value": "SLvEf71WClAXLQgV",
+          "mode": "list",
+          "cachedResultName": "SOP Daily Report Automation Workflow (#SLvEf71WClAXLQgV)"
+        },
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        352
+      ],
+      "id": "7c8bcb6f-401d-4015-aadd-8efe83b52b06",
+      "name": "Activate SOP Daily Report Automation Workflow",
+      "credentials": {
+        "n8nApi": {
+          "id": "Aro4PmqV3637mOVQ",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deactivate",
+        "workflowId": {
+          "__rl": true,
+          "value": "zS25sJCdfsanbdEU",
+          "mode": "list",
+          "cachedResultName": "Procurement&Logistics DailyReport Flow (#zS25sJCdfsanbdEU)"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        352
+      ],
+      "id": "aa24539e-f253-4d9b-a26c-0faec4823588",
+      "name": "Deactivate Procurement and Logistics Daily Report Flow",
+      "credentials": {
+        "n8nApi": {
+          "id": "Aro4PmqV3637mOVQ",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2000,
+        352
+      ],
+      "id": "73c63f01-b011-4007-9217-7e6717f70e32",
+      "name": "Wait Procurement and Logistics Daily Report Flow",
+      "webhookId": "c8ff8097-c0d8-4cf7-9f77-18c054371d10"
+    },
+    {
+      "parameters": {
+        "operation": "activate",
+        "workflowId": {
+          "__rl": true,
+          "value": "zS25sJCdfsanbdEU",
+          "mode": "list",
+          "cachedResultName": "Procurement&Logistics DailyReport Flow (#zS25sJCdfsanbdEU)"
+        },
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        2208,
+        352
+      ],
+      "id": "7e86a551-af13-4e40-a3ee-68e193aaa72a",
+      "name": "Activate Procurement and Logistics Daily Report Flow",
+      "credentials": {
+        "n8nApi": {
+          "id": "Aro4PmqV3637mOVQ",
+          "name": "n8n account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Deactivate DGT Daily Report Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deactivate DGT Daily Report Workflow": {
+      "main": [
+        [
+          {
+            "node": "Wait DGT Daily Report Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activate DGT Daily Report Workflow": {
+      "main": [
+        [
+          {
+            "node": "Deactivate SOP Daily Report Automation Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait DGT Daily Report Workflow": {
+      "main": [
+        [
+          {
+            "node": "Activate DGT Daily Report Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deactivate SOP Daily Report Automation Workflow": {
+      "main": [
+        [
+          {
+            "node": "Wait SOP Daily Report Automation Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait SOP Daily Report Automation Workflow": {
+      "main": [
+        [
+          {
+            "node": "Activate SOP Daily Report Automation Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activate SOP Daily Report Automation Workflow": {
+      "main": [
+        [
+          {
+            "node": "Deactivate Procurement and Logistics Daily Report Flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deactivate Procurement and Logistics Daily Report Flow": {
+      "main": [
+        [
+          {
+            "node": "Wait Procurement and Logistics Daily Report Flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Procurement and Logistics Daily Report Flow": {
+      "main": [
+        [
+          {
+            "node": "Activate Procurement and Logistics Daily Report Flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Yangon",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "3933ac5f-7923-4f90-8e7e-aa8ad98d27a8",
+  "activeVersionId": "3933ac5f-7923-4f90-8e7e-aa8ad98d27a8",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-06-10T06:56:00.301Z",
+      "createdAt": "2026-06-10T06:56:00.301Z",
+      "role": "workflow:owner",
+      "workflowId": "haFZi6kNAGsYnwCK",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-06-11T10:06:01.154Z",
+    "createdAt": "2026-06-11T10:04:55.678Z",
+    "versionId": "3933ac5f-7923-4f90-8e7e-aa8ad98d27a8",
+    "workflowId": "haFZi6kNAGsYnwCK",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 0 2 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          16
+        ],
+        "id": "265a66c7-f7a4-4ef1-bfc0-a307b1f2c294",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "operation": "deactivate",
+          "workflowId": {
+            "__rl": true,
+            "value": "GmMLk3sYiZCqDhHv",
+            "mode": "list",
+            "cachedResultName": "DGTIntern Daily Report Workflow (#GmMLk3sYiZCqDhHv)"
+          },
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.n8n",
+        "typeVersion": 1,
+        "position": [
+          544,
+          352
+        ],
+        "id": "523318c1-cd52-4d1d-a594-2e5edef0ba5a",
+        "name": "Deactivate DGT Daily Report Workflow",
+        "credentials": {
+          "n8nApi": {
+            "id": "Aro4PmqV3637mOVQ",
+            "name": "n8n account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "activate",
+          "workflowId": {
+            "__rl": true,
+            "value": "GmMLk3sYiZCqDhHv",
+            "mode": "list",
+            "cachedResultName": "DGTIntern Daily Report Workflow (#GmMLk3sYiZCqDhHv)"
+          },
+          "additionalFields": {},
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.n8n",
+        "typeVersion": 1,
+        "position": [
+          960,
+          352
+        ],
+        "id": "368e0b9d-996f-494f-9661-02b1d51dddc4",
+        "name": "Activate DGT Daily Report Workflow",
+        "credentials": {
+          "n8nApi": {
+            "id": "Aro4PmqV3637mOVQ",
+            "name": "n8n account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": 30
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          752,
+          352
+        ],
+        "id": "dbe6345d-e391-476a-9b51-e5bae627246d",
+        "name": "Wait DGT Daily Report Workflow",
+        "webhookId": "f36d90ec-3dbb-42b9-a319-e365e184ed0b"
+      },
+      {
+        "parameters": {
+          "operation": "deactivate",
+          "workflowId": {
+            "__rl": true,
+            "value": "SLvEf71WClAXLQgV",
+            "mode": "list",
+            "cachedResultName": "SOP Daily Report Automation Workflow (#SLvEf71WClAXLQgV)"
+          },
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.n8n",
+        "typeVersion": 1,
+        "position": [
+          1168,
+          352
+        ],
+        "id": "16d5be82-5b12-4736-81f9-b7ce8a091fa7",
+        "name": "Deactivate SOP Daily Report Automation Workflow",
+        "credentials": {
+          "n8nApi": {
+            "id": "Aro4PmqV3637mOVQ",
+            "name": "n8n account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": 30
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          1376,
+          352
+        ],
+        "id": "5dd91235-251d-4b66-ad41-519e009e4e9e",
+        "name": "Wait SOP Daily Report Automation Workflow",
+        "webhookId": "1613ce2a-78dc-4497-b678-87efa4c8027c"
+      },
+      {
+        "parameters": {
+          "operation": "activate",
+          "workflowId": {
+            "__rl": true,
+            "value": "SLvEf71WClAXLQgV",
+            "mode": "list",
+            "cachedResultName": "SOP Daily Report Automation Workflow (#SLvEf71WClAXLQgV)"
+          },
+          "additionalFields": {},
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.n8n",
+        "typeVersion": 1,
+        "position": [
+          1584,
+          352
+        ],
+        "id": "7c8bcb6f-401d-4015-aadd-8efe83b52b06",
+        "name": "Activate SOP Daily Report Automation Workflow",
+        "credentials": {
+          "n8nApi": {
+            "id": "Aro4PmqV3637mOVQ",
+            "name": "n8n account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "deactivate",
+          "workflowId": {
+            "__rl": true,
+            "value": "zS25sJCdfsanbdEU",
+            "mode": "list",
+            "cachedResultName": "Procurement&Logistics DailyReport Flow (#zS25sJCdfsanbdEU)"
+          },
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.n8n",
+        "typeVersion": 1,
+        "position": [
+          1792,
+          352
+        ],
+        "id": "aa24539e-f253-4d9b-a26c-0faec4823588",
+        "name": "Deactivate Procurement and Logistics Daily Report Flow",
+        "credentials": {
+          "n8nApi": {
+            "id": "Aro4PmqV3637mOVQ",
+            "name": "n8n account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": 30
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          2000,
+          352
+        ],
+        "id": "73c63f01-b011-4007-9217-7e6717f70e32",
+        "name": "Wait Procurement and Logistics Daily Report Flow",
+        "webhookId": "c8ff8097-c0d8-4cf7-9f77-18c054371d10"
+      },
+      {
+        "parameters": {
+          "operation": "activate",
+          "workflowId": {
+            "__rl": true,
+            "value": "zS25sJCdfsanbdEU",
+            "mode": "list",
+            "cachedResultName": "Procurement&Logistics DailyReport Flow (#zS25sJCdfsanbdEU)"
+          },
+          "additionalFields": {},
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.n8n",
+        "typeVersion": 1,
+        "position": [
+          2208,
+          352
+        ],
+        "id": "7e86a551-af13-4e40-a3ee-68e193aaa72a",
+        "name": "Activate Procurement and Logistics Daily Report Flow",
+        "credentials": {
+          "n8nApi": {
+            "id": "Aro4PmqV3637mOVQ",
+            "name": "n8n account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Deactivate DGT Daily Report Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deactivate DGT Daily Report Workflow": {
+        "main": [
+          [
+            {
+              "node": "Wait DGT Daily Report Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Activate DGT Daily Report Workflow": {
+        "main": [
+          [
+            {
+              "node": "Deactivate SOP Daily Report Automation Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait DGT Daily Report Workflow": {
+        "main": [
+          [
+            {
+              "node": "Activate DGT Daily Report Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deactivate SOP Daily Report Automation Workflow": {
+        "main": [
+          [
+            {
+              "node": "Wait SOP Daily Report Automation Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait SOP Daily Report Automation Workflow": {
+        "main": [
+          [
+            {
+              "node": "Activate SOP Daily Report Automation Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Activate SOP Daily Report Automation Workflow": {
+        "main": [
+          [
+            {
+              "node": "Deactivate Procurement and Logistics Daily Report Flow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deactivate Procurement and Logistics Daily Report Flow": {
+        "main": [
+          [
+            {
+              "node": "Wait Procurement and Logistics Daily Report Flow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait Procurement and Logistics Daily Report Flow": {
+        "main": [
+          [
+            {
+              "node": "Activate Procurement and Logistics Daily Report Flow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "admin admin",
+    "name": "Version 3933ac5f",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
