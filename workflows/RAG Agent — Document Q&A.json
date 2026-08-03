@@ -1,0 +1,401 @@
+{
+  "updatedAt": "2026-06-09T09:19:22.010Z",
+  "createdAt": "2026-06-09T09:05:18.586Z",
+  "id": "ERr3DouKk644iZOc",
+  "name": "RAG Agent — Document Q&A",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e0074563-cdb6-4f2f-9c2c-56b5d5583b6e",
+      "name": "Run Ingestion",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.coopfoundation.org.uk/wp-content/uploads/2019/06/App-guidance_-interest-free-loans-UK-wide.pdf",
+        "options": {}
+      },
+      "id": "60738f29-64c4-4e03-bf3f-43926f500404",
+      "name": "Fetch Document",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        480,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "kkztest",
+          "mode": "list",
+          "cachedResultName": "kkztest"
+        },
+        "options": {}
+      },
+      "id": "6d6987f1-25b9-4ccb-b2cb-5bcfdad37bd8",
+      "name": "Pinecone — Insert Documents",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        160
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "iHDZYtBauSzI9lmD",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "122522a0-a09e-4f19-8393-db563fbcf7c6",
+      "name": "OpenAI Embeddings (Ingest)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        288
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "id": "87aed431-402c-4fe6-b921-d74c45d58572",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "id": "5e47c3a1-7cff-43f1-a94c-137fb6c39b04",
+      "name": "Recursive Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📥 Step 1 — Document Ingestion\n\nRun this pipeline manually to load documents into Pinecone.\n\n**Configure:**\n- Set the Document URL to your PDF/text file\n- Set your Pinecone Index Name in both vector store nodes\n- Set OpenAI & Pinecone credentials",
+        "height": 200,
+        "width": 780,
+        "color": 3
+      },
+      "id": "a40e4f71-470a-44e8-aa52-b269aaedf5dc",
+      "name": "Sticky Note fb21cc84",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "subtitle": "Ask me anything about the ingested documents!",
+          "title": "RAG Assistant",
+          "responseMode": "streaming"
+        }
+      },
+      "id": "f67ee2ca-906f-4de1-9a47-c8bcab807cbf",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        560
+      ],
+      "webhookId": "54cda92e-9b5e-4e52-9b3a-2797cb46fa9f"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful RAG (Retrieval-Augmented Generation) assistant. When answering questions, always use the 'Pinecone — Knowledge Base' tool to search for relevant information from the ingested documents before responding. Base your answers on the retrieved context. If the retrieved documents don't contain enough information, say so clearly.",
+          "maxIterations": 5,
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "d521b4d5-3032-4731-9535-9ef59e08733c",
+      "name": "RAG Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        480,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "f508fc6c-f695-4d1b-88e4-be453cb870e5",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        704
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "id": "bfce109f-6b93-4c1e-8b88-55787737f5f0",
+      "name": "Window Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        688,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the knowledge base for relevant information from ingested documents. Use this tool to answer questions about the documents.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "kkztest",
+          "mode": "list",
+          "cachedResultName": "kkztest"
+        },
+        "topK": 5,
+        "options": {}
+      },
+      "id": "7b0af5e0-8437-4cf1-afb3-40d15f0ce082",
+      "name": "Pinecone — Knowledge Base",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        880,
+        704
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "iHDZYtBauSzI9lmD",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "735b657e-57ba-4648-b597-50adbdc4f8b8",
+      "name": "OpenAI Embeddings (Query)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        832
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "ctUYBPugmcpbPVwm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 💬 Step 2 — RAG Chat Agent\n\nAfter ingestion, use the Chat Trigger URL to start asking questions.\n\nThe agent uses Pinecone to retrieve relevant context before answering.\n\n**Streaming mode** enabled — replies appear in real time.",
+        "height": 200,
+        "width": 540,
+        "color": 2
+      },
+      "id": "400a3c17-3fbe-4fc2-a329-646f8fc19568",
+      "name": "Sticky Note 7d278e34",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        512
+      ]
+    }
+  ],
+  "connections": {
+    "Run Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Fetch Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Document": {
+      "main": [
+        [
+          {
+            "node": "Pinecone — Insert Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embeddings (Ingest)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone — Insert Documents",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone — Insert Documents",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "RAG Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "RAG Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone — Knowledge Base": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embeddings (Query)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone — Knowledge Base",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "409b7efe-0477-48af-9ba3-b85b2d85da4f",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-06-09T09:05:18.586Z",
+      "createdAt": "2026-06-09T09:05:18.586Z",
+      "role": "workflow:owner",
+      "workflowId": "ERr3DouKk644iZOc",
+      "projectId": "7FT1qXwUrXGP3Bsc"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
